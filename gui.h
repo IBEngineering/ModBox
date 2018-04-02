@@ -28,6 +28,12 @@
 #define GDISP_POPUP_TITLE_Y		12
 #define GDISP_POPUP_TEXT_Y		19
 
+#define GDISP_MENU_MAXLINES		9
+#define GDISP_MENU_NEXTLINE		6
+#define GDISP_MENU_X			1
+#define GDISP_MENU_TITLE_Y		5
+#define GDISP_MENU_TEXT_Y		15
+
 #ifdef GDISP_SOFTWARE
 #define GDISPLAY		U8G2_ST7920_128X64_F_SW_SPI
 #endif
@@ -72,13 +78,19 @@ public:
 	// TODO: add push values for different types (of values)
 	result_t setFocus(uint8_t focus);
 	~Menu();
+
+	uint8_t count;					// Amount of pushed items
 private:
 	void drawTitle();
+	void drawItemsStatic();			// Without scrolling
+	void drawItemsDynamic();		// With scrolling
 
 	bool scrollable;
+	uint8_t topFocus;				// Top of the visible list
+
 	uint8_t lastFocus, currFocus;	// 256 options should be enough
-	/* Amount of pushed items */
-	uint8_t count;
+
+//	uint8_t count;					// Amount of pushed items
 	const char **items;
 };
 

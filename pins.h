@@ -27,5 +27,11 @@
 #define PIN_ENC3_B		30
 #define PIN_ENC3_BTN	32
 
+#define PIN_ENC4_A		35
+#define PIN_ENC4_B		36
+#define PIN_ENC4_BTN	34
+
+#define PIN_SWITCH		33
+#define	PIN_PEDAL		37
 
 #endif /* PINS_H_ */

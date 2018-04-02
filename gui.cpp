@@ -85,6 +85,7 @@ bool Popup::next()
 Menu::Menu(GDISPLAY *disp, const char *title, bool scrollable) : Screen(disp,title)
 {
 	this->scrollable = scrollable;
+	this->topFocus = 0;
 	this->lastFocus = 0;
 	this->currFocus = 0;
 	this->count = 0;
@@ -94,13 +95,31 @@ Menu::Menu(GDISPLAY *disp, const char *title, bool scrollable) : Screen(disp,tit
 void Menu::drawTitle()
 {
 	uint8_t w = disp->getStrWidth(title);
-	disp->setCursor(64-(w+1)/2, 5);
-	disp->drawHLine(64-(w+3)/2, 7, w+2);
+	disp->setCursor(64-(w+1)/2, GDISP_MENU_TITLE_Y);
+	disp->print(title);
+	disp->drawHLine(64-(w+3)/2, GDISP_MENU_TITLE_Y+2, w+2);
+}
+
+void Menu::drawItemsStatic()
+{
+	uint8_t i;
+
+	for(i = 0; i < count; i++)
+	{
+		disp->setCursor(GDISP_MENU_X, GDISP_MENU_TEXT_Y+GDISP_MENU_NEXTLINE*i);
+		disp->print(items[i]);
+	}
+}
+
+void Menu::drawItemsDynamic()
+{
+
 }
 
 result_t Menu::show()
 {
 	drawTitle();
+	(scrollable) ? drawItemsDynamic() : drawItemsStatic();
 
 	return UNIMPLEMENTED;
 }
@@ -112,7 +131,7 @@ result_t Menu::update()
 
 result_t Menu::push(const char *item)
 {
-	if(count > 255)	return OUT_OF_BOUNDS;
+	if(count > ((scrollable) ? 255 : GDISP_MENU_MAXLINES))	return OUT_OF_BOUNDS;
 	items[count] = item;
 	count++;
 	return SUCCESS;

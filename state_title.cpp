@@ -55,9 +55,7 @@ void TitleState::iloop()
 
 result_t TitleState::onAnything()
 {
-	disp->setCursor(0,64);
-	disp->print("anything!");
-
+	mgr->setCurrentState(1);
 	return EVENT_CONSUMED;
 }
 

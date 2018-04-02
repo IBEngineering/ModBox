@@ -22,6 +22,7 @@
 
 // TODO: think of a good way to organize this
 // TODO: organize this
+// TODO: adding another to do
 
 typedef enum {
 
@@ -29,15 +30,16 @@ typedef enum {
 
 
 	// State Manager
-	STATE_MGR_OUT_OF_BOUNDS = -5,	// not really necessary anymore
-	STATE_MGR_CURRENTLY_ACTIVE = -4,
+	STATE_MGR_OUT_OF_BOUNDS = -6,	// not really necessary anymore
+	STATE_MGR_CURRENTLY_ACTIVE = -5,
 
 	// Events
-	EVENT_FAILED = -3,
+	EVENT_FAILED = -4,
 
 	// Generics
-	UNIMPLEMENTED = -2,
-	OUT_OF_BOUNDS = -1,
+	UNIMPLEMENTED = -3,
+	OUT_OF_BOUNDS = -2,
+	UNKNOWN = -1,
 
 	// Success
 	SUCCESS = 0,

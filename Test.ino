@@ -1,14 +1,20 @@
 #include "Arduino.h"
 #include <Audio.h>
 #include <U8g2lib.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
 
 #include "gui.h"
 #include "hardware.h"
 #include "pins.h"
 #include "results.h"
+#include "state_menu_main.h"
 #include "state_mgr.h"
 #include "state_title.h"
 #include "stk_pitch_shift.h"
+#include "value_bounded.h"
 
 
 //U8G2_ST7920_128X64_F_HW_SPI u8g2(U8G2_R2, PIN_CS);
@@ -20,28 +26,13 @@ EncoderCapsule	encc2	= {Encoder(PIN_ENC2_A, PIN_ENC2_B), EncoderButton(PIN_ENC2_
 EncoderCapsule	encc3	= {Encoder(PIN_ENC3_A, PIN_ENC3_B), EncoderButton(PIN_ENC3_BTN)};
 EncoderCapsule	encc4	= {Encoder(PIN_ENC4_A, PIN_ENC4_B), EncoderButton(PIN_ENC4_BTN)};
 
-Menu *menu = new Menu(&u8g2, "-=Some Even Longer Menu=-", false);
-Popup *popup = new Popup(&u8g2, "Some popup");
-
-StateManager	stateManager(1, &encc1, &encc2, &encc3, &encc1, &u8g2);
+StateManager	stateManager(2, &encc1, &encc2, &encc3, &encc4, &u8g2);
 TitleState		titleState(&stateManager);
-
+MainMenuState	mainMenuState(&stateManager);
 
 
 #define FLANGE_DELAY_LENGTH (6*AUDIO_BLOCK_SAMPLES)
 short delayline[FLANGE_DELAY_LENGTH];
-
-#include <Audio.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <SerialFlash.h>
-
-#include <Audio.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
-#include <SerialFlash.h>
 
 // GUItool: begin automatically generated code
 AudioInputI2S            i2s1;           //xy=148,280
@@ -67,8 +58,6 @@ AudioConnection          patchCord7(mixer1, 0, i2s2, 1);
 AudioControlSGTL5000     sgtl5000_1;     //xy=166,644
 // GUItool: end automatically generated code
 
-
-
 const int myInput = AUDIO_INPUT_LINEIN;
 
 void setup()
@@ -82,6 +71,8 @@ void setup()
 	sgtl5000_1.enable();
 	sgtl5000_1.inputSelect(myInput);
 	sgtl5000_1.volume(0.5);
+	sgtl5000_1.adcHighPassFilterDisable();
+//	sgtl5000_1.write(CHIP_ANA_POWER, 0x40EF);
 
 
 	SPI.setSCK(PIN_CLOCK);
@@ -112,7 +103,7 @@ void setup()
 
 	ps1.shift(164.81f / 130.81f);
 	ps2.shift(196.00f / 130.81f);
-	ps3.shift(2.0f);
+	ps3.shift(1.0f);
 
 
 	// Init GUI
@@ -122,46 +113,41 @@ void setup()
 	u8g2.setFont(u8g2_font_4x6_tr);
 
 
-	menu->push("THIS");
-	menu->push("More Text");
-	menu->push("Enum Value");
-	menu->push("");
-	menu->push("resonance");
-	menu->push("frequency");
-	menu->push("something else");
-	menu->push("delay");
-	r = menu->push("nothing");
-
-	if(r != SUCCESS)
-	{
-		gdisp_showPopupResult(&u8g2, r, "Error?");
-		u8g2.sendBuffer();
-
-		delay(2000);
-	}
+//	menu->push("THIS");
+//	menu->push("More Text");
+//	menu->push("Enum Value");
+//	menu->push("");
+//	menu->push("resonance");
+//	menu->push("frequency");
+//	menu->push("something else");
+//	menu->push("delay");
+//	r = menu->push("nothing");
+//
+//	if(r != SUCCESS)
+//	{
+//		gdisp_showPopupResult(&u8g2, r, "Error?");
+//		u8g2.sendBuffer();
+//
+//		delay(2000);
+//	}
 
 	// State Managing
 	r = stateManager.setState(0, &titleState);
 	if(r < 0)
 	{
-		//TODO: error handling should use a popup feature in gui.h
-
-		// Temporary error handling
-//		u8g2.print(" give error:");
-//		u8g2.setCursor(14,15);
-//		u8g2.print(r);
-//		u8g2.sendBuffer();
+		gdisp_showPopupResult(&u8g2, r, "Could not load title!");
+		delay(1000);
 	}
 
-	u8g2.sendBuffer();
+	r = stateManager.setState(1, &mainMenuState);
+	if(r < 0)
+	{
+		gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
+		delay(1000);
+	}
+
 	stateManager.setCurrentState(0);
-
-	stateManager.setup();
-
 	u8g2.sendBuffer();
-
-	u8g2.setCursor(30,30);
-	u8g2.print("text");
 }
 
 void events()
@@ -175,20 +161,66 @@ void events()
 
 	if(encc1.c.current_read())
 	{
-		r = stateManager.states[0]->onAnything();
-		if(r != 0)
+		r = stateManager.onAnything();
+		if(r == EVENT_IGNORED)
 		{
-			gdisp_showPopupResult(&u8g2, r, (r==1)?"consumed":"(?)");
-		}
-		else
-		{
-			u8g2.setCursor(0,63);
-			u8g2.print("-.-");
+			r = stateManager.onConfirm(0b00000000);
 		}
 	}
 
-	u8g2.setCursor(20,20);
-	u8g2.printf("encc1: %d", encc1.c.current_read());
+	if(encc2.c.current_read())
+	{
+		r = stateManager.onAnything();
+		if(r == EVENT_IGNORED)
+		{
+			r = stateManager.onConfirm(0b00000001);
+		}
+	}
+
+	int32_t v;
+
+	// TODO: determine these flags
+	// FIXME: use flags
+
+	v = ROTARY_CORRECTION(encc1.r.read());
+	if(v)
+	{
+		if(stateManager.onAnything() == EVENT_IGNORED)
+		{
+			stateManager.onScrollPri(0b00000000, v);
+		}
+		encc1.r.write(0);
+	}
+
+	v = ROTARY_CORRECTION(encc2.r.read());
+	if(v)
+	{
+		if(stateManager.onAnything() == EVENT_IGNORED)
+		{
+			stateManager.onScrollPri(0b00000001, v);
+		}
+		encc2.r.write(0);
+	}
+
+	v = ROTARY_CORRECTION(encc3.r.read());
+	if(v)
+	{
+		if(stateManager.onAnything() == EVENT_IGNORED)
+		{
+			stateManager.onScrollSec(0b00000000, v);
+		}
+		encc3.r.write(0);
+	}
+
+	v = ROTARY_CORRECTION(encc4.r.read());
+	if(v)
+	{
+		if(stateManager.onAnything() == EVENT_IGNORED)
+		{
+			stateManager.onScrollSec(0b00000001, v);
+		}
+		encc4.r.write(0);
+	}
 }
 
 uint64_t tick = 0;
@@ -198,65 +230,73 @@ void loop()
 {
 //	u8g2.clearBuffer();
 
-//	events();
+	events();
+	stateManager.loop();
 
 //	menu->show();
 //	u8g2.setCursor(1,12);
 //	u8g2.printf("count: %d", menu->count);
 //
-	encc1.c.read();
-	encc2.c.read();
-	encc3.c.read();
-	encc4.c.read();
+//	encc1.c.read();
+//	encc2.c.read();
+//	encc3.c.read();
+//	encc4.c.read();
 //
 //	if(encc1.c.current_read())
 //	{
 //		gdisp_showPopupResult(&u8g2, UNIMPLEMENTED, "Unimplemented Method");
 //	}
-
-
-	u8g2.drawPixel(tick % 128, 64 - rms1.read() * 128);
-
-//	float amp = rms1.read() * 32.0f;
-//	if (amp > 3.0f) amp = 2.9f;
-	mixer1.gain(0, 0.25f);
-	mixer1.gain(1, 0.25f);
-	mixer1.gain(2, 0.25f);
-	mixer1.gain(3, 0.1f);
-
-	uint8_t mode = analogRead(PIN_PEDAL)/256;
-	if(currmode != mode)
-	{
-		currmode = mode;
-		u8g2.setDrawColor(0);
-		u8g2.drawBox(20,20, 80, 40);
-		u8g2.setCursor(40,40);
-		u8g2.setDrawColor(1);
-		if(mode == 0)
-		{
-			u8g2.print("Chord: m/5");
-			ps1.shift(155.56f / 130.81f);
-			ps2.shift(185.00f / 130.81f);
-		}
-		else if(mode == 1)
-		{
-			u8g2.print("Chord: m");
-			ps1.shift(155.56f / 130.81f);
-			ps2.shift(196.00f / 130.81f);
-		}
-		else if(mode == 2)
-		{
-			u8g2.print("Chord: M");
-			ps1.shift(164.81f / 130.81f);
-			ps2.shift(196.00f / 130.81f);
-		}
-		else if(mode == 3)
-		{
-			u8g2.print("Chord: M/5");
-			ps1.shift(164.81f / 130.81f);
-			ps2.shift(185.00f / 130.81f);
-		}
-	}
+//
+//
+//	u8g2.drawPixel(tick % 128, 64 - rms1.read() * 128);
+//
+////	float amp = rms1.read() * 32.0f;
+////	if (amp > 3.0f) amp = 2.9f;
+//	mixer1.gain(0, 0.4f);
+//	mixer1.gain(1, 0.25f);
+//	mixer1.gain(2, 0.25f);
+//	mixer1.gain(3, 0.1f);
+//
+//	uint8_t mode = analogRead(PIN_PEDAL)/200;
+//	if(currmode != mode)
+//	{
+//		currmode = mode;
+//		u8g2.setDrawColor(0);
+//		u8g2.drawBox(20,20, 80, 40);
+//		u8g2.setCursor(40,40);
+//		u8g2.setDrawColor(1);
+//		if(mode == 1)
+//		{
+//			u8g2.print("Chord: m/5");
+//			ps1.shift(155.56f / 130.81f);
+//			ps2.shift(185.00f / 130.81f);
+//		}
+//		else if(mode == 2)
+//		{
+//			u8g2.print("Chord: m");
+//			ps1.shift(155.56f / 130.81f);
+//			ps2.shift(196.00f / 130.81f);
+//		}
+//		else if(mode == 3)
+//		{
+//			u8g2.print("Chord: M");
+//			ps1.shift(164.81f / 130.81f);
+//			ps2.shift(196.00f / 130.81f);
+//		}
+//		else if(mode == 4)
+//		{
+//			u8g2.print("Chord: M/5");
+//			ps1.shift(164.81f / 130.81f);
+//			ps2.shift(185.00f / 130.81f);
+//		}
+//		else
+//		{
+//			u8g2.print("Chord: ----");
+//			ps1.shift(1.0f);
+//			ps2.shift(1.0f);
+//			ps3.shift(1.0f);
+//		}
+//	}
 
 //	waveform1.frequency(55.0f + 400.0f * analogRead(PIN_PEDAL)/1024.0f);
 //	waveform1.amplitude(rms1.read() * 8.0f);

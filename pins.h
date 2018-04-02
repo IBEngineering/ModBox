@@ -34,4 +34,6 @@
 #define PIN_SWITCH		33
 #define	PIN_PEDAL		37
 
+#define CHIP_ANA_POWER	0x0030
+
 #endif /* PINS_H_ */

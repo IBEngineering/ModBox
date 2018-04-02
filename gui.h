@@ -31,7 +31,7 @@
 #define GDISP_MENU_MAXLINES		9
 #define GDISP_MENU_NEXTLINE		6
 #define GDISP_MENU_X			1
-#define GDISP_MENU_TITLE_Y		5
+#define GDISP_MENU_TITLE_Y		6
 #define GDISP_MENU_TEXT_Y		15
 
 #ifdef GDISP_SOFTWARE
@@ -76,6 +76,7 @@ public:
 	result_t update();
 	result_t push(const char *item);
 	// TODO: add push values for different types (of values)
+	uint8_t getFocus();
 	result_t setFocus(uint8_t focus);
 	~Menu();
 
@@ -84,6 +85,7 @@ private:
 	void drawTitle();
 	void drawItemsStatic();			// Without scrolling
 	void drawItemsDynamic();		// With scrolling
+	void drawFocus(bool d);
 
 	bool scrollable;
 	uint8_t topFocus;				// Top of the visible list

@@ -113,19 +113,33 @@ void Menu::drawItemsStatic()
 
 void Menu::drawItemsDynamic()
 {
+	if(count <= GDISP_MENU_MAXLINES)
+	{
+		drawItemsStatic();
+	}
+}
 
+void Menu::drawFocus(bool changed)
+{
+	disp->setDrawColor(2);
+	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*currFocus, (scrollable)?121:128, 7);
+	if(changed)	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*lastFocus, (scrollable)?121:128, 7);
+	disp->setDrawColor(1);
 }
 
 result_t Menu::show()
 {
 	drawTitle();
 	(scrollable) ? drawItemsDynamic() : drawItemsStatic();
+	drawFocus(false);
 
 	return UNIMPLEMENTED;
 }
 
 result_t Menu::update()
 {
+	drawFocus(true);
+
 	return UNIMPLEMENTED;
 }
 
@@ -137,9 +151,14 @@ result_t Menu::push(const char *item)
 	return SUCCESS;
 }
 
+uint8_t Menu::getFocus()
+{
+	return currFocus;
+}
+
 result_t Menu::setFocus(uint8_t focus)
 {
-	if(focus > count) return OUT_OF_BOUNDS;
+	if(focus >= count) return OUT_OF_BOUNDS;
 	lastFocus = currFocus;
 	currFocus = focus;
 	return SUCCESS;
@@ -166,5 +185,7 @@ void gdisp_showPopupResult(GDISPLAY *disp, result_t r, const char *msg)
 	if(!popup->next())	return;
 	disp->printf("Msg: %s", msg);
 	delete popup;
+
+	disp->sendBuffer();
 }
 

@@ -14,6 +14,7 @@ StateManager::StateManager(uint8_t size,
 {
 	states			= new ProgramState*[size];
 	currI			= 0;	// Per default starts at 0
+	uptime			= 0;
 	this->size		= size;
 	this->encc1		= encc1;
 	this->encc2		= encc2;
@@ -28,12 +29,23 @@ StateManager::StateManager(uint8_t size,
 	}
 }
 
+elapsedMillis StateManager::getUptime()
+{
+	return uptime;
+}
+
+void StateManager::resetUptime()
+{
+	uptime = 0;
+}
+
 result_t StateManager::setState(uint8_t i, ProgramState *state)
 {
 	if(i >= size)							return STATE_MGR_OUT_OF_BOUNDS;
 	if(states[currI] != NULL && i == currI)	return STATE_MGR_CURRENTLY_ACTIVE;
 
 	states[i] = state;
+	uptime = 0;
 
 	return SUCCESS;
 }
@@ -42,14 +54,8 @@ void StateManager::setCurrentState(uint8_t state)
 {
 	if(state >= size)	return;
 	this->currI = state;
-
-	//TODO: perhaps this could be in a clean() function?
-//	// Reset after last state
-//	ENC_WRITE(encc1,0);
-//	ENC_WRITE(encc2,0);
-//	ENC_WRITE(encc3,0);
-//	ENC_WRITE(encc4,0);
-
+	resetUptime();
+	disp->clearBuffer();
 	states[currI]->setup();
 }
 

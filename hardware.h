@@ -13,13 +13,15 @@
 #include <Encoder.h>
 #include <stdint.h>
 
-#define ENC_PRESSEDV(enc)	enc.c.delta_read()
-#define ENC_PRESSED(enc)	enc->c.delta_read()
+#define ROTARY_CORRECTION(v)	v/4
 
-#define	ENC_READV(enc)		enc.r.read()
-#define ENC_READ(enc)		enc->r.read()
-#define ENC_WRITEV(enc,v)	enc.r.write(v)
-#define ENC_WRITE(enc,v)	enc->r.write(v)
+#define ENC_PRESSEDV(enc)		enc.c.delta_read()
+#define ENC_PRESSED(enc)		enc->c.delta_read()
+
+#define	ENC_READV(enc)			enc.r.read()
+#define ENC_READ(enc)			enc->r.read()
+#define ENC_WRITEV(enc,v)		enc.r.write(v)
+#define ENC_WRITE(enc,v)		enc->r.write(v)
 
 /**
  * A button for when an encoder is pressed.

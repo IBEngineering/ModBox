@@ -30,6 +30,8 @@ public:
 			EncoderCapsule *encc3, EncoderCapsule *encc4,
 			GDISPLAY *disp);
 
+	elapsedMillis getUptime();
+	void resetUptime();
 	result_t setState(uint8_t i, ProgramState *state);
 	void setCurrentState(uint8_t state);
 
@@ -46,8 +48,8 @@ public:
 
 	~StateManager();
 private:
-
 	uint8_t			currI;
+	elapsedMillis	uptime;
 	uint8_t			size;
 };
 

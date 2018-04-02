@@ -36,12 +36,12 @@
 #define GDISP		U8G2_ST7920_128X64_F_HW_SPI
 #endif
 
+// Screen
 class Screen
 {
 public:
 	Screen(GDISPLAY *disp, const char *title);
 	virtual result_t show() =0;
-	virtual bool next() =0;
 	virtual ~Screen();
 protected:
 	GDISPLAY *disp;
@@ -49,6 +49,7 @@ protected:
 	uint8_t currentLine;
 };
 
+// Popup
 class Popup : public Screen
 {
 public:
@@ -60,7 +61,28 @@ private:
 	void drawTitle();
 };
 
-// Functions
+//Menu
+class Menu : public Screen
+{
+public:
+	Menu(GDISPLAY *disp, const char *title, bool scrollable);
+	result_t show();
+	result_t update();
+	result_t push(const char *item);
+	// TODO: add push values for different types (of values)
+	result_t setFocus(uint8_t focus);
+	~Menu();
+private:
+	void drawTitle();
+
+	bool scrollable;
+	uint8_t lastFocus, currFocus;	// 256 options should be enough
+	/* Amount of pushed items */
+	uint8_t count;
+	const char **items;
+};
+
+// Methods
 
 void gdisp_init();
 

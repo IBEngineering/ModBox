@@ -9,6 +9,8 @@
 
 #include "gui.h"
 
+// Screen
+
 Screen::Screen(GDISPLAY *disp, const char *title)
 {
 	this->disp = disp;
@@ -18,12 +20,13 @@ Screen::Screen(GDISPLAY *disp, const char *title)
 }
 
 result_t Screen::show()	{return UNIMPLEMENTED;}
-bool Screen::next() 	{return false;}
 
 Screen::~Screen()
 {
 	delete[] title;
 }
+
+// Popup
 
 Popup::Popup(GDISPLAY *disp, const char *title) : Screen(disp,title) {}
 
@@ -77,6 +80,59 @@ bool Popup::next()
 	}
 }
 
+// Menu
+
+Menu::Menu(GDISPLAY *disp, const char *title, bool scrollable) : Screen(disp,title)
+{
+	this->scrollable = scrollable;
+	this->lastFocus = 0;
+	this->currFocus = 0;
+	this->count = 0;
+	this->items = new const char*[256]; /* 256 strings */
+}
+
+void Menu::drawTitle()
+{
+	uint8_t w = disp->getStrWidth(title);
+	disp->setCursor(64-(w+1)/2, 5);
+	disp->drawHLine(64-(w+3)/2, 7, w+2);
+}
+
+result_t Menu::show()
+{
+	drawTitle();
+
+	return UNIMPLEMENTED;
+}
+
+result_t Menu::update()
+{
+	return UNIMPLEMENTED;
+}
+
+result_t Menu::push(const char *item)
+{
+	if(count > 255)	return OUT_OF_BOUNDS;
+	items[count] = item;
+	count++;
+	return SUCCESS;
+}
+
+result_t Menu::setFocus(uint8_t focus)
+{
+	if(focus > count) return OUT_OF_BOUNDS;
+	lastFocus = currFocus;
+	currFocus = focus;
+	return SUCCESS;
+}
+
+Menu::~Menu()
+{
+	delete[] items;
+}
+
+// Methods
+
 void gdisp_init()
 {
 	// TODO: init u8g2
@@ -90,5 +146,6 @@ void gdisp_showPopupResult(GDISPLAY *disp, result_t r, const char *msg)
 	disp->printf("Code: %d", r);
 	if(!popup->next())	return;
 	disp->printf("Msg: %s", msg);
+	delete popup;
 }
 

@@ -24,6 +24,7 @@ TitleState		titleState(&stateManager);
 
 void setup()
 {
+
 	// Multiple purpose result/return
 	int8_t r = 0;
 
@@ -49,6 +50,9 @@ void setup()
 	u8g2.begin();
 	u8g2.clearBuffer();
 	u8g2.setFont(u8g2_font_4x6_tr);
+
+	Menu *menu = new Menu(&u8g2, "Some menu", false);
+	menu->show();
 
 	// State Managing
 	r = stateManager.setState(0, &titleState);

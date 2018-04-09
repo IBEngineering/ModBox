@@ -8,6 +8,7 @@
 
 #include "gui.h"
 #include "hardware.h"
+#include "model_model.h"
 #include "pins.h"
 #include "results.h"
 #include "state_menu_main.h"
@@ -15,6 +16,10 @@
 #include "state_title.h"
 #include "stk_pitch_shift.h"
 #include "value_bounded.h"
+
+#include "modules/input.h"
+#include "modules/pitch_shifter.h"
+#include "modules/output.h"
 
 
 //U8G2_ST7920_128X64_F_HW_SPI u8g2(U8G2_R2, PIN_CS);
@@ -30,48 +35,119 @@ StateManager	stateManager(2, &encc1, &encc2, &encc3, &encc4, &u8g2);
 TitleState		titleState(&stateManager);
 MainMenuState	mainMenuState(&stateManager);
 
+static Popup *gPopup;
 
 #define FLANGE_DELAY_LENGTH (6*AUDIO_BLOCK_SAMPLES)
 short delayline[FLANGE_DELAY_LENGTH];
 
 // GUItool: begin automatically generated code
-AudioInputI2S            i2s1;           //xy=148,280
-StkPitchShift       ps3(4096); //xy=152,227
-StkPitchShift       ps2(4096); //xy=157,180
-StkPitchShift       ps1(4096);      //xy=159,126
-AudioAnalyzeRMS          rms1;           //xy=355,409
-AudioMixer4              mixer1;         //xy=414,199
-AudioOutputI2S           i2s2;           //xy=710,194
-AudioConnection          patchCord1(i2s1, 1, mixer1, 3);
-AudioConnection          patchCord2(i2s1, 1, rms1, 0);
-
-AudioConnection          patchCord30(i2s1, 1, ps3, 0);
-AudioConnection          patchCord40(i2s1, 1, ps2, 0);
-AudioConnection          patchCord50(i2s1, 1, ps1, 0);
-
-AudioConnection          patchCord3(ps3, 0, mixer1, 2);
-AudioConnection          patchCord4(ps2, 0, mixer1, 1);
-AudioConnection          patchCord5(ps1, 0, mixer1, 0);
-
-AudioConnection          patchCord6(mixer1, 0, i2s2, 0);
-AudioConnection          patchCord7(mixer1, 0, i2s2, 1);
-AudioControlSGTL5000     sgtl5000_1;     //xy=166,644
+//AudioInputI2S            i2s1;           //xy=148,280
+//StkPitchShift       ps3(4096); //xy=152,227
+//StkPitchShift       ps2(4096); //xy=157,180
+//StkPitchShift       ps1(4096);      //xy=159,126
+//AudioAnalyzeRMS          rms1;           //xy=355,409
+//AudioMixer4              mixer1;         //xy=414,199
+//AudioOutputI2S           i2s2;           //xy=710,194
+//AudioConnection          patchCord1(i2s1, 1, mixer1, 3);
+//AudioConnection          patchCord2(i2s1, 1, rms1, 0);
+//
+//AudioConnection          patchCord30(i2s1, 1, ps3, 0);
+//AudioConnection          patchCord40(i2s1, 1, ps2, 0);
+//AudioConnection          patchCord50(i2s1, 1, ps1, 0);
+//
+//AudioConnection          patchCord3(ps3, 0, mixer1, 2);
+//AudioConnection          patchCord4(ps2, 0, mixer1, 1);
+//AudioConnection          patchCord5(ps1, 0, mixer1, 0);
+//
+//AudioConnection          patchCord6(mixer1, 0, i2s2, 0);
+//AudioConnection          patchCord7(mixer1, 0, i2s2, 1);
+//AudioControlSGTL5000     sgtl5000_1;     //xy=166,644
 // GUItool: end automatically generated code
 
-const int myInput = AUDIO_INPUT_LINEIN;
+
+static InputModule modInput(0);
+static PitchShifterModule modPitchShifter(1);
+static OutputModule modOutput(2);
+
+static AudioStream **streams;
+static AudioConnection **conns;
+static AudioControlSGTL5000 *sgtl;
+
+void audio()
+{
+	AudioMemory(64);
+
+	streams = new AudioStream*[4];
+	modInput.spStream(&streams[0]);
+	modPitchShifter.spStream(&streams[1]);
+//	streams[1] = new StkPitchShift(0x1000);
+	modOutput.spStream(&streams[2]);
+//	streams[2] = new AudioOutputI2S();
+	streams[3] = new AudioAnalyzeRMS();
+
+
+	AudioStream *fUse = NULL;
+	AudioStream *tUse = NULL;
+	int fPort = 0;
+	int tPort = 0;
+	conns = new AudioConnection*[4];
+
+	/*
+	 * The following code means: "
+	 *   from input, get connection at output port 0
+	 *   and connect that to input port 0 of the pitch shift
+	 */
+	modInput.spConnOut(&streams[0], &fUse, &fPort, 0);
+	modPitchShifter.spConnIn(&streams[1], &tUse, &tPort, 0);
+	conns[0] = new AudioConnection(*fUse, fPort, *tUse, tPort);
+
+	modPitchShifter.spConnOut(&streams[1], &fUse, &fPort, 0);
+	modOutput.spConnIn(&streams[2], &tUse, &tPort, 0);
+	conns[1] = new AudioConnection(*fUse, fPort, *tUse, tPort);
+
+	conns[2] = new AudioConnection(*streams[0], 1, *streams[3], 0);
+
+	sgtl = new AudioControlSGTL5000();
+	sgtl->enable();
+	sgtl->inputSelect(AUDIO_INPUT_LINEIN);
+	sgtl->volume(.5f);
+	sgtl->adcHighPassFilterDisable();
+}
 
 void setup()
 {
 	// Multiple purpose result/return
 	result_t r;
 
-	// Allocate audio memory
-	AudioMemory(64);
+	audio();
 
-	sgtl5000_1.enable();
-	sgtl5000_1.inputSelect(myInput);
-	sgtl5000_1.volume(0.5);
-	sgtl5000_1.adcHighPassFilterDisable();
+
+//	u8g2.begin();
+//	u8g2.clearBuffer();
+//	u8g2.setFont(u8g2_font_4x6_tr);
+
+	// Allocate audio memory
+//	AudioMemory(64);
+
+//	Model model = Model(3);
+//
+//	model.modules[0] = &modInput;
+//	model.modules[1] = &modPitchShifter;
+//	model.modules[2] = &modOuput;
+//
+//	modInput.getOutputs()[0] = 1;
+//	modPitchShifter.getInputs()[0] = 0;
+//
+//	modPitchShifter.getOutputs()[0] = 2;
+//	modOuput.getInputs()[0] = 1;
+//
+//	model.bakeAudioFrom(0);
+
+
+//	sgtl5000_1.enable();
+//	sgtl5000_1.inputSelect(AUDIO_INPUT_LINEIN);
+//	sgtl5000_1.volume(0.5);
+//	sgtl5000_1.adcHighPassFilterDisable();
 //	sgtl5000_1.write(CHIP_ANA_POWER, 0x40EF);
 
 
@@ -101,9 +177,9 @@ void setup()
 //	waveform2.begin(0.5, 155.56f, WAVEFORM_SINE);
 //	waveform3.begin(0.5, 196.00f, WAVEFORM_SINE);
 
-	ps1.shift(164.81f / 130.81f);
-	ps2.shift(196.00f / 130.81f);
-	ps3.shift(1.0f);
+//	ps1.shift(164.81f / 130.81f);
+//	ps2.shift(196.00f / 130.81f);
+//	ps3.shift(2.0f);
 
 
 	// Init GUI
@@ -246,16 +322,17 @@ void loop()
 //	{
 //		gdisp_showPopupResult(&u8g2, UNIMPLEMENTED, "Unimplemented Method");
 //	}
-//
-//
-//	u8g2.drawPixel(tick % 128, 64 - rms1.read() * 128);
-//
+
+
+	AudioAnalyzeRMS *rms = (AudioAnalyzeRMS *) streams[3];
+	u8g2.drawPixel(tick % 128, 64 - rms->read() * 128);
+
 ////	float amp = rms1.read() * 32.0f;
 ////	if (amp > 3.0f) amp = 2.9f;
-//	mixer1.gain(0, 0.4f);
+//	mixer1.gain(0, 0.25f);
 //	mixer1.gain(1, 0.25f);
 //	mixer1.gain(2, 0.25f);
-//	mixer1.gain(3, 0.1f);
+//	mixer1.gain(3, 0.25f);
 //
 //	uint8_t mode = analogRead(PIN_PEDAL)/200;
 //	if(currmode != mode)

@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2018-04-02 21:25:24
+//This file has been generated on 2018-04-09 21:25:44
 
 #include "Arduino.h"
 #include "Arduino.h"
@@ -14,6 +14,7 @@
 #include <SerialFlash.h>
 #include "gui.h"
 #include "hardware.h"
+#include "model_model.h"
 #include "pins.h"
 #include "results.h"
 #include "state_menu_main.h"
@@ -21,7 +22,11 @@
 #include "state_title.h"
 #include "stk_pitch_shift.h"
 #include "value_bounded.h"
+#include "modules/input.h"
+#include "modules/pitch_shifter.h"
+#include "modules/output.h"
 
+void audio() ;
 void setup() ;
 void events() ;
 void loop() ;

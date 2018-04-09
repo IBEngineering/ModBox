@@ -7,19 +7,29 @@
 
 #include "input.h"
 
-InputModule::InputModule() {
-	audioStream = new AudioInputI2S();
-	values = NULL;
+InputModule::InputModule(uint8_t id) : Module(id, "IN", NULL, 0, 0, 1, 4) {
+	outputs = new uint8_t[getOutputCount()*getParalsCount()];
 }
 
-const char	*InputModule::getName()				{return "IN";}
-const char	**InputModule::getValueNames()		{return NULL;}
-uint8_t		InputModule::getValueCount()		{return 0;}
-uint8_t		InputModule::getInputCount()		{return 0;}
-uint8_t		InputModule::getOutputCount()		{return 1;}
-uint8_t		InputModule::getParalsCount()		{return 4;}
+uint8_t InputModule::spStream(AudioStream **arrStore)
+{
+	arrStore[0] = new AudioInputI2S();
+	return 1;
+}
+
+uint8_t InputModule::spConnIn(AudioStream **arrStore, AudioStream **used, int *port, int idx)
+{
+	return 0;
+}
+
+uint8_t InputModule::spConnOut(AudioStream **arrStore, AudioStream **used, int *port, int idx)
+{
+	*used = arrStore[0];
+	*port = 1;
+	return 1;
+}
 
 InputModule::~InputModule() {
-	delete audioStream;
+	delete[] outputs;
 }
 

@@ -34,6 +34,8 @@
 #define GDISP_MENU_TITLE_Y		6
 #define GDISP_MENU_TEXT_Y		15
 
+#define GDISP_PLOT_TITLE_Y		6
+
 #ifdef GDISP_SOFTWARE
 #define GDISPLAY		U8G2_ST7920_128X64_F_SW_SPI
 #endif
@@ -67,7 +69,7 @@ private:
 	void drawTitle();
 };
 
-//Menu
+// Menu
 class Menu : public Screen
 {
 public:
@@ -80,7 +82,7 @@ public:
 	result_t setFocus(uint8_t focus);
 	~Menu();
 
-	uint8_t count;					// Amount of pushed items
+	uint8_t count;					// Arount of pushed items
 private:
 	void drawTitle();
 	void drawItemsStatic();			// Without scrolling
@@ -94,6 +96,30 @@ private:
 
 //	uint8_t count;					// Amount of pushed items
 	const char **items;
+};
+
+// Plot
+enum PlotType
+{
+	WRAP, SCROLL
+};
+class Plot : public Screen
+{
+public:
+	Plot(GDISPLAY *disp, const char *title, PlotType type,
+			float minY, float maxY, uint8_t stepX, uint8_t stepY);
+	result_t show();
+	result_t put(uint8_t idx, float y);
+private:
+	uint8_t vals[124];
+	PlotType type;
+	float minY;
+	float maxY;
+	uint8_t stepX;
+	uint8_t stepY;
+
+	void drawTitle();
+	void drawAxes();
 };
 
 // Methods

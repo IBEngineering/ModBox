@@ -169,6 +169,65 @@ Menu::~Menu()
 	delete[] items;
 }
 
+// Plot
+Plot::Plot(GDISPLAY *disp, const char *title, PlotType type,
+			float minY, float maxY, uint8_t stepX, uint8_t stepY) : Screen(disp, title)
+{
+	this->type = type;
+	this->minY = minY;
+	this->maxY = maxY;
+	this->stepX = stepX;
+	this->stepY = stepY;
+}
+
+result_t Plot::show()
+{
+	drawTitle();
+	drawAxes();
+	return SUCCESS;
+}
+
+result_t Plot::put(uint8_t idx, float y)
+{
+	vals[idx] = ((y - minY) / (maxY - minY)) * 52;
+	disp->drawVLine(3 + idx, 61 - vals[idx], vals[idx]);
+	if(type == WRAP)
+	{
+		disp->setDrawColor(0);
+		disp->drawVLine(3+idx + ((idx==123)?-123:1), 9, 51);
+		disp->setDrawColor(1);
+	}
+	return SUCCESS;
+}
+
+void Plot::drawTitle()
+{
+	uint8_t w = disp->getStrWidth(title);
+	disp->setCursor(64-(w+1)/2, GDISP_MENU_TITLE_Y);
+	disp->print(title);
+	disp->drawHLine(64-(w+3)/2, GDISP_MENU_TITLE_Y+2, w+2);
+}
+
+void Plot::drawAxes()
+{
+	disp->drawVLine(2,9,54);
+	disp->drawHLine(1,61,126);
+
+	int s = 3 + stepX;
+	while(s <= 126)
+	{
+		disp->drawPixel(s, 62);
+		s += stepX;
+	}
+
+	s = 61 - stepX;
+	while(s >= 9)
+	{
+		disp->drawPixel(1, s);
+		s -= stepX;
+	}
+}
+
 // Methods
 
 void gdisp_init()

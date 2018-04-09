@@ -36,6 +36,7 @@ TitleState		titleState(&stateManager);
 MainMenuState	mainMenuState(&stateManager);
 
 static Popup *gPopup;
+static Plot *plot;
 
 #define FLANGE_DELAY_LENGTH (6*AUDIO_BLOCK_SAMPLES)
 short delayline[FLANGE_DELAY_LENGTH];
@@ -73,9 +74,18 @@ static AudioStream **streams;
 static AudioConnection **conns;
 static AudioControlSGTL5000 *sgtl;
 
+/**
+ * Temporary function to emulate everything in audio
+ */
 void audio()
 {
 	AudioMemory(64);
+
+	sgtl = new AudioControlSGTL5000();
+	sgtl->enable();
+	sgtl->inputSelect(AUDIO_INPUT_LINEIN);
+	sgtl->volume(.5f);
+	sgtl->adcHighPassFilterDisable();
 
 	streams = new AudioStream*[4];
 	modInput.spStream(&streams[0]);
@@ -106,12 +116,6 @@ void audio()
 	conns[1] = new AudioConnection(*fUse, fPort, *tUse, tPort);
 
 	conns[2] = new AudioConnection(*streams[0], 1, *streams[3], 0);
-
-	sgtl = new AudioControlSGTL5000();
-	sgtl->enable();
-	sgtl->inputSelect(AUDIO_INPUT_LINEIN);
-	sgtl->volume(.5f);
-	sgtl->adcHighPassFilterDisable();
 }
 
 void setup()
@@ -188,6 +192,9 @@ void setup()
 	u8g2.clearBuffer();
 	u8g2.setFont(u8g2_font_4x6_tr);
 
+	plot = new Plot(&u8g2, "rms", WRAP, 0.0f, 0.45f, 4, 4);
+	plot->show();
+	u8g2.sendBuffer();
 
 //	menu->push("THIS");
 //	menu->push("More Text");
@@ -207,23 +214,23 @@ void setup()
 //		delay(2000);
 //	}
 
-	// State Managing
-	r = stateManager.setState(0, &titleState);
-	if(r < 0)
-	{
-		gdisp_showPopupResult(&u8g2, r, "Could not load title!");
-		delay(1000);
-	}
-
-	r = stateManager.setState(1, &mainMenuState);
-	if(r < 0)
-	{
-		gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
-		delay(1000);
-	}
-
-	stateManager.setCurrentState(0);
-	u8g2.sendBuffer();
+//	// State Managing
+//	r = stateManager.setState(0, &titleState);
+//	if(r < 0)
+//	{
+//		gdisp_showPopupResult(&u8g2, r, "Could not load title!");
+//		delay(1000);
+//	}
+//
+//	r = stateManager.setState(1, &mainMenuState);
+//	if(r < 0)
+//	{
+//		gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
+//		delay(1000);
+//	}
+//
+//	stateManager.setCurrentState(0);
+//	u8g2.sendBuffer();
 }
 
 void events()
@@ -306,8 +313,8 @@ void loop()
 {
 //	u8g2.clearBuffer();
 
-	events();
-	stateManager.loop();
+//	events();
+//	stateManager.loop();
 
 //	menu->show();
 //	u8g2.setCursor(1,12);
@@ -325,7 +332,8 @@ void loop()
 
 
 	AudioAnalyzeRMS *rms = (AudioAnalyzeRMS *) streams[3];
-	u8g2.drawPixel(tick % 128, 64 - rms->read() * 128);
+	plot->put(tick % 124, rms->read());
+//	u8g2.drawPixel(tick % 128, 64 - rms->read() * 128);
 
 ////	float amp = rms1.read() * 32.0f;
 ////	if (amp > 3.0f) amp = 2.9f;

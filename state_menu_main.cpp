@@ -37,6 +37,14 @@ result_t MainMenuState::onScrollPri(uint8_t flag, int16_t v)
 	return EVENT_CONSUMED;
 }
 
+result_t MainMenuState::onConfirm(uint8_t flag)
+{
+	if(menu->getFocus() == 2)
+	{
+		mgr->setCurrentState(2);
+	}
+}
+
 void MainMenuState::isetup()
 {
 	menu->push("Display");

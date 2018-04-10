@@ -244,7 +244,7 @@ void gdisp_showPopupResult(GDISPLAY *disp, result_t r, const char *msg)
 	if(!popup->next())	return;
 	disp->printf("Msg: %s", msg);
 	delete popup;
-
 	disp->sendBuffer();
+	delay(1500);
 }
 

@@ -11,6 +11,7 @@
 #include "model_model.h"
 #include "pins.h"
 #include "results.h"
+#include "state_graph.h"
 #include "state_menu_main.h"
 #include "state_mgr.h"
 #include "state_title.h"
@@ -32,9 +33,17 @@ EncoderCapsule	encc2	= {Encoder(PIN_ENC2_A, PIN_ENC2_B), EncoderButton(PIN_ENC2_
 EncoderCapsule	encc3	= {Encoder(PIN_ENC3_A, PIN_ENC3_B), EncoderButton(PIN_ENC3_BTN)};
 EncoderCapsule	encc4	= {Encoder(PIN_ENC4_A, PIN_ENC4_B), EncoderButton(PIN_ENC4_BTN)};
 
-StateManager	stateManager(2, &encc1, &encc2, &encc3, &encc4, &u8g2);
+static Model model(4);
+
+static InputModule modInput(0);
+//static PitchShifterModule modPitchShifter(1);
+static ChorusModule modChorus(1);
+static OutputModule modOutput(2);
+
+StateManager	stateManager(3, &encc1, &encc2, &encc3, &encc4, &u8g2);
 TitleState		titleState(&stateManager);
 MainMenuState	mainMenuState(&stateManager);
+GraphState		graphState(&stateManager, "Tuner", &model);
 
 static Popup *gPopup;
 static Plot *plot;
@@ -66,13 +75,6 @@ short delayline[FLANGE_DELAY_LENGTH];
 //AudioControlSGTL5000     sgtl5000_1;     //xy=166,644
 // GUItool: end automatically generated code
 
-
-static Model model(4);
-
-static InputModule modInput(0);
-//static PitchShifterModule modPitchShifter(1);
-static ChorusModule modChorus(1);
-static OutputModule modOutput(2);
 
 //static AudioStream **streams;
 //static AudioConnection **conns;
@@ -269,23 +271,27 @@ void setup()
 //		delay(2000);
 //	}
 
-//	// State Managing
-//	r = stateManager.setState(0, &titleState);
-//	if(r < 0)
-//	{
-//		gdisp_showPopupResult(&u8g2, r, "Could not load title!");
-//		delay(1000);
-//	}
-//
-//	r = stateManager.setState(1, &mainMenuState);
-//	if(r < 0)
-//	{
-//		gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
-//		delay(1000);
-//	}
-//
-//	stateManager.setCurrentState(0);
-//	u8g2.sendBuffer();
+	// State Managing
+	r = stateManager.setState(0, &titleState);
+	if(r < 0)
+	{
+		gdisp_showPopupResult(&u8g2, r, "Could not load title!");
+	}
+
+	r = stateManager.setState(1, &mainMenuState);
+	if(r < 0)
+	{
+		gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
+	}
+
+	r = stateManager.setState(2, &graphState);
+	if(r < 0)
+	{
+		gdisp_showPopupResult(&u8g2, r, "Could not load graph!");
+	}
+
+	stateManager.setCurrentState(0);
+	u8g2.sendBuffer();
 }
 
 void events()
@@ -368,8 +374,8 @@ void loop()
 {
 //	u8g2.clearBuffer();
 
-//	events();
-//	stateManager.loop();
+	events();
+	stateManager.loop();
 
 //	menu->show();
 //	u8g2.setCursor(1,12);

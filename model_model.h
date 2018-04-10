@@ -20,6 +20,7 @@ public:
 	virtual ~Model();
 
 	Module			**modules;	// TODO: PUT THIS BAKC IN PRIVATE
+	int8_t hasInput(Module *t, Module *m);	// TODO: same
 private:
 	uint8_t			size;
 	uint8_t			count;
@@ -33,7 +34,7 @@ private:
 	// Audio
 	AudioControlSGTL5000	sgtl5000;
 
-	int8_t hasInput(Module *t, Module *m);
+//	int8_t hasInput(Module *t, Module *m);
 	void deleteAllAudio();
 	result_t bakeAudioFor(uint8_t id);
 };

@@ -17,6 +17,7 @@
 #include "stk_pitch_shift.h"
 #include "value_bounded.h"
 
+#include "modules/chorus.h"
 #include "modules/input.h"
 #include "modules/pitch_shifter.h"
 #include "modules/output.h"
@@ -66,13 +67,16 @@ short delayline[FLANGE_DELAY_LENGTH];
 // GUItool: end automatically generated code
 
 
+static Model model(4);
+
 static InputModule modInput(0);
-static PitchShifterModule modPitchShifter(1);
+//static PitchShifterModule modPitchShifter(1);
+static ChorusModule modChorus(1);
 static OutputModule modOutput(2);
 
-static AudioStream **streams;
-static AudioConnection **conns;
-static AudioControlSGTL5000 *sgtl;
+//static AudioStream **streams;
+//static AudioConnection **conns;
+//static AudioControlSGTL5000 *sgtl;
 
 /**
  * Temporary function to emulate everything in audio
@@ -81,49 +85,97 @@ void audio()
 {
 	AudioMemory(64);
 
-	sgtl = new AudioControlSGTL5000();
-	sgtl->enable();
-	sgtl->inputSelect(AUDIO_INPUT_LINEIN);
-	sgtl->volume(.5f);
-	sgtl->adcHighPassFilterDisable();
+//	sgtl = new AudioControlSGTL5000();
 
-	streams = new AudioStream*[4];
-	modInput.spStream(&streams[0]);
-	modPitchShifter.spStream(&streams[1]);
+	model.modules[0] = &modInput;
+	model.modules[1] = &modChorus;
+	model.modules[2] = &modOutput;
+
+	u8g2.setCursor(0,6);
+	u8g2.print("1");
+	u8g2.sendBuffer();
+
+	modInput.getOutputs()[0] = 1;
+	modChorus.getInputs()[0] = 0;
+	modChorus.getOutputs()[0] = 2;
+	modOutput.getInputs()[0] = 1;
+
+	u8g2.setCursor(0,12);
+	u8g2.print("2");
+	u8g2.sendBuffer();
+
+//	uint8_t i;
+//	Module *m = &modInput;
+//	for(i = 0; i < m->getOutputCount() * m->getParalsCount(); i++)
+//	{
+//		// FIXME: this is really janky
+//		uint8_t tIdx = m->getOutputs()[i];
+//		if(tIdx >= 4) break;
+//		Module *t = model.modules[tIdx];
+//		uint8_t in = model.hasInput(t, m);
+//		u8g2.setCursor(0,18);
+//		u8g2.printf("%d -> %d", i, in);
+//		u8g2.sendBuffer();
+//
+////		if(in >= 0)
+////		{
+////			AudioStream *fUse, *tUse;
+////			int fPort, tPort;
+////
+////			m->spConnOut(&streams[id], &fUse, &fPort, i);
+////			t->spConnIn(&streams[t->getId()], &tUse, &tPort, in);
+////
+////			connections[connectionCount] = new AudioConnection(*fUse, fPort, *tUse, tPort);
+////			connectionCount++;
+////		}
+//	}
+
+	result_t r = model.bakeAudioFrom(0);
+
+	gdisp_showPopupResult(&u8g2, r, "Something's bad");
+
+//	streams = new AudioStream*[4];
+//	modInput.spStream(&streams[0]);
+//	modChorus.spStream(&streams[1]);
+//	modOutput.spStream(&streams[2]);
+//	streams[3] = new AudioAnalyzeRMS();
+
+//	streams[0] = new AudioInputI2S();
 //	streams[1] = new StkPitchShift(0x1000);
-	modOutput.spStream(&streams[2]);
 //	streams[2] = new AudioOutputI2S();
-	streams[3] = new AudioAnalyzeRMS();
+//	streams[3] = new AudioAnalyzeRMS();
 
-
-	AudioStream *fUse = NULL;
-	AudioStream *tUse = NULL;
-	int fPort = 0;
-	int tPort = 0;
-	conns = new AudioConnection*[4];
-
-	/*
-	 * The following code means: "
-	 *   from input, get connection at output port 0
-	 *   and connect that to input port 0 of the pitch shift
-	 */
-	modInput.spConnOut(&streams[0], &fUse, &fPort, 0);
-	modPitchShifter.spConnIn(&streams[1], &tUse, &tPort, 0);
-	conns[0] = new AudioConnection(*fUse, fPort, *tUse, tPort);
-
-	modPitchShifter.spConnOut(&streams[1], &fUse, &fPort, 0);
-	modOutput.spConnIn(&streams[2], &tUse, &tPort, 0);
-	conns[1] = new AudioConnection(*fUse, fPort, *tUse, tPort);
-
-	conns[2] = new AudioConnection(*streams[0], 1, *streams[3], 0);
+//	AudioStream *fUse = NULL;
+//	AudioStream *tUse = NULL;
+//	int fPort = 0;
+//	int tPort = 0;
+//	conns = new AudioConnection*[4];
+//
+//	/*
+//	 * The following code means: "
+//	 *   from input, get connection at output port 0
+//	 *   and connect that to input port 0 of the pitch shift
+//	 */
+//	modInput.spConnOut(&streams[0], &fUse, &fPort, 0);
+//	modChorus.spConnIn(&streams[1], &tUse, &tPort, 0);
+//	conns[0] = new AudioConnection(*fUse, fPort, *tUse, tPort);
+//
+//	modChorus.spConnOut(&streams[1], &fUse, &fPort, 0);
+//	modOutput.spConnIn(&streams[2], &tUse, &tPort, 0);
+//	conns[1] = new AudioConnection(*fUse, fPort, *tUse, tPort);
+//
+//	conns[2] = new AudioConnection(*streams[0], 1, *streams[3], 0);
+//
+//	sgtl->enable();
+//	sgtl->inputSelect(AUDIO_INPUT_LINEIN);
+//	sgtl->volume(.5f);
+//	sgtl->adcHighPassFilterDisable();
 }
 
 void setup()
 {
 	// Multiple purpose result/return
 	result_t r;
-
-	audio();
 
 
 //	u8g2.begin();
@@ -192,9 +244,12 @@ void setup()
 	u8g2.clearBuffer();
 	u8g2.setFont(u8g2_font_4x6_tr);
 
-	plot = new Plot(&u8g2, "rms", WRAP, 0.0f, 0.45f, 4, 4);
-	plot->show();
-	u8g2.sendBuffer();
+//	plot = new Plot(&u8g2, "rms", WRAP, 0.0f, 0.45f, 4, 4);
+//	plot->show();
+//	u8g2.sendBuffer();
+
+
+	audio();
 
 //	menu->push("THIS");
 //	menu->push("More Text");
@@ -330,9 +385,14 @@ void loop()
 //		gdisp_showPopupResult(&u8g2, UNIMPLEMENTED, "Unimplemented Method");
 //	}
 
+//	AudioAnalyzeRMS *rms = (AudioAnalyzeRMS *) streams[3];
 
-	AudioAnalyzeRMS *rms = (AudioAnalyzeRMS *) streams[3];
-	plot->put(tick % 124, rms->read());
+//	u8g2.drawPixel(tick % 128, 63);
+//	u8g2.setCursor(10,10);
+//	u8g2.printf("rms: %f", rms->read());
+
+
+//	plot->put(tick % 124, rms->read());
 //	u8g2.drawPixel(tick % 128, 64 - rms->read() * 128);
 
 ////	float amp = rms1.read() * 32.0f;

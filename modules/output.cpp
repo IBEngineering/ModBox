@@ -20,7 +20,7 @@ uint8_t		OutputModule::spStream(AudioStream **arrStore)
 uint8_t		OutputModule::spConnIn(AudioStream **arrStore, AudioStream **used, int *port, int idx)
 {
 	*used = arrStore[0];
-	*port = 1;
+	*port = 0;
 	return 1;
 }
 

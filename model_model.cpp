@@ -18,10 +18,6 @@ Model::Model(uint8_t size) {
 	baked = NULL;
 
 	sgtl5000 = AudioControlSGTL5000();
-	sgtl5000.enable();
-	sgtl5000.inputSelect(AUDIO_INPUT_LINEIN);
-	sgtl5000.volume(0.5);
-	sgtl5000.adcHighPassFilterDisable();
 }
 
 int8_t Model::hasInput(Module *t, Module *m)
@@ -72,14 +68,20 @@ result_t Model::bakeAudioFor(uint8_t id)
 	for(i = 0; i < m->getOutputCount() * m->getParalsCount(); i++)
 	{
 		// FIXME: this is really janky
-		Module *t = modules[m->getOutputs()[i]];
+		uint8_t tIdx = m->getOutputs()[i];
+		if(tIdx >= 4) break;
+		Module *t = modules[tIdx];
 		uint8_t in = hasInput(t, m);
 		if(in >= 0)
 		{
+			AudioStream *fUse, *tUse;
+			int fPort, tPort;
 			bakeAudioFor(t->getId());
-			connections[connectionCount] =
-				new AudioConnection(*streams[id], i, *streams[t->getId()], in);
-			connections++;
+			m->spConnOut(&streams[id], &fUse, &fPort, i);
+			t->spConnIn(&streams[t->getId()], &tUse, &tPort, in);
+
+			connections[connectionCount] = new AudioConnection(*fUse, fPort, *tUse, tPort);
+			connectionCount++;
 		}
 	}
 
@@ -98,7 +100,16 @@ result_t Model::bakeAudioFrom(uint8_t id)
 	baked = new bool[size];
 	for(int i = 0; i < size; i++){baked[i] = false;}
 
-	bakeAudioFor(id);
+	result_t r = bakeAudioFor(id);
+	if(r < 0)
+	{
+		return r;
+	}
+
+	sgtl5000.enable();
+	sgtl5000.inputSelect(AUDIO_INPUT_LINEIN);
+	sgtl5000.volume(0.5);
+	sgtl5000.adcHighPassFilterDisable();
 
 	return SUCCESS;
 }

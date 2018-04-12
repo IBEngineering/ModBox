@@ -41,8 +41,8 @@ void StateManager::resetUptime()
 
 result_t StateManager::setState(uint8_t i, ProgramState *state)
 {
-	if(i >= size)							return STATE_MGR_OUT_OF_BOUNDS;
-	if(states[currI] != NULL && i == currI)	return STATE_MGR_CURRENTLY_ACTIVE;
+	if(i >= size)							return OUT_OF_BOUNDS;
+	if(states[currI] != NULL && i == currI)	return STATE_MGR_ACTIVE;
 
 	states[i] = state;
 	uptime = 0;

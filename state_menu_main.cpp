@@ -23,7 +23,7 @@ result_t MainMenuState::onAnything()
 
 result_t MainMenuState::onScrollPri(uint8_t flag, int16_t v)
 {
-	result_t r = UNKNOWN;
+	result_t r = NULL_POINTER;
 	if(v == 0)	return EVENT_IGNORED;
 	if(v > 0)
 	{
@@ -43,6 +43,7 @@ result_t MainMenuState::onConfirm(uint8_t flag)
 	{
 		mgr->setCurrentState(2);
 	}
+	return SUCCESS;
 }
 
 void MainMenuState::isetup()

@@ -14,8 +14,8 @@ PitchShifterModule::PitchShifterModule(uint8_t id) : Module(id, "PSH", valueName
 	values = new Value*[1];
 	values[0] = new BoundedValue(0.0, 0.01, 3.0);
 
-	inputs = new uint8_t[1];
-	outputs = new uint8_t[1];
+	inputs = new uint8_t[1]		{0};
+	outputs = new uint8_t[1]	{0};
 }
 
 uint8_t PitchShifterModule::spStream(AudioStream **arrStore)

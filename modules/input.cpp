@@ -8,7 +8,7 @@
 #include "input.h"
 
 InputModule::InputModule(uint8_t id) : Module(id, "IN", NULL, 0, 0, 1, 4) {
-	outputs = new uint8_t[getOutputCount()*getParalsCount()];
+	outputs = new uint8_t[4]	{0};
 }
 
 uint8_t InputModule::spStream(AudioStream **arrStore)

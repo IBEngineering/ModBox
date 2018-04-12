@@ -20,7 +20,10 @@ public:
 	virtual ~Model();
 
 	Module			**modules;	// TODO: PUT THIS BAKC IN PRIVATE
-	int8_t hasInput(Module *t, Module *m);	// TODO: same
+
+	int8_t usesInput(Module *m);
+	int8_t usesOutput(Module *m);
+	int8_t hasInput(Module *t, Module *m);
 private:
 	uint8_t			size;
 	uint8_t			count;

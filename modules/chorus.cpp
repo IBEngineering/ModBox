@@ -16,8 +16,8 @@ ChorusModule::ChorusModule(uint8_t id) : Module(id, "CHR", valueNames, 1,1,1,1)
 {
 	values = new Value*[1];
 	values[0] = new BoundedValue(1.0f, 1.0f, 16.0f, 2.0f);
-	inputs = new uint8_t[1];
-	outputs = new uint8_t[1];
+	inputs = new uint8_t[1]		{0};
+	outputs = new uint8_t[1]	{0};
 }
 
 uint8_t ChorusModule::spStream(AudioStream **arrStore)

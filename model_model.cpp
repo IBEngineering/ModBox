@@ -20,6 +20,26 @@ Model::Model(uint8_t size) {
 	sgtl5000 = AudioControlSGTL5000();
 }
 
+int8_t Model::usesInput(Module *m)
+{
+	uint8_t i,c=0;
+	for(i = 0; i < m->getInputCount(); i++)
+	{
+		if(m->getInputs()[i] > 0)	c++;
+	}
+	return c;
+}
+
+int8_t Model::usesOutput(Module *m)
+{
+	uint8_t i,c=0;
+	for(i = 0; i < m->getOutputCount() * m->getParalsCount(); i++)
+	{
+		if(m->getOutputs()[i] > 0)	c++;
+	}
+	return c;
+}
+
 int8_t Model::hasInput(Module *t, Module *m)
 {
 	for(uint8_t i = 0; i < t->getInputCount(); i++)
@@ -47,21 +67,23 @@ void Model::deleteAllAudio()
 
 result_t Model::bakeAudioFor(uint8_t id)
 {
-	if(baked[id])	return result_t::SUCCESS;
+	if(baked[id-1])	return result_t::SUCCESS;
 
 	uint8_t i;
 
-	Module *m = modules[id];
-	if(m == NULL)	return result_t::UNKNOWN;
+	Module *m = modules[id-1];
+	if(m == NULL)	return result_t::NULL_POINTER;
 
-	m->spStream(&streams[id]);
-	baked[id] = true;
+	m->spStream(&streams[id-1]);
+	baked[id-1] = true;
 
 	for(i = 0; i < m->getInputCount(); i++)
 	{
-		if(!baked[m->getInputs()[i]])
+		uint8_t tIdx = m->getInputs()[i];
+		if(tIdx == 0) break;
+		if(!baked[tIdx-1])
 		{
-			bakeAudioFor(m->getInputs()[i]);
+			bakeAudioFor(tIdx);
 		}
 	}
 
@@ -69,16 +91,16 @@ result_t Model::bakeAudioFor(uint8_t id)
 	{
 		// FIXME: this is really janky
 		uint8_t tIdx = m->getOutputs()[i];
-		if(tIdx >= 4) break;
-		Module *t = modules[tIdx];
+		if(tIdx >= 4 || tIdx == 0) break;
+		Module *t = modules[tIdx-1];
 		uint8_t in = hasInput(t, m);
 		if(in >= 0)
 		{
 			AudioStream *fUse, *tUse;
 			int fPort, tPort;
 			bakeAudioFor(t->getId());
-			m->spConnOut(&streams[id], &fUse, &fPort, i);
-			t->spConnIn(&streams[t->getId()], &tUse, &tPort, in);
+			m->spConnOut(&streams[id-1], &fUse, &fPort, i);
+			t->spConnIn(&streams[t->getId()-1], &tUse, &tPort, in);
 
 			connections[connectionCount] = new AudioConnection(*fUse, fPort, *tUse, tPort);
 			connectionCount++;
@@ -90,7 +112,7 @@ result_t Model::bakeAudioFor(uint8_t id)
 
 result_t Model::bakeAudioFrom(uint8_t id)
 {
-	if(modules[id]->getInputCount() > 0)	return result_t::UNKNOWN;
+	if(modules[id-1]->getInputCount() > 0)	return result_t::INVALID_ARGUMENT;
 
 	if(streams != NULL || connections != NULL)	deleteAllAudio();
 	if(baked != NULL)							delete[] baked;

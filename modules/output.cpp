@@ -8,7 +8,7 @@
 #include "output.h"
 
 OutputModule::OutputModule(uint8_t id) : Module(id, "OUT", NULL, 0,1,0,0) {
-	inputs = new uint8_t[1];
+	inputs = new uint8_t[1]	{0};
 }
 
 uint8_t		OutputModule::spStream(AudioStream **arrStore)

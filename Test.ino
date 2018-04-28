@@ -45,8 +45,21 @@ TitleState		titleState(&stateManager);
 MainMenuState	mainMenuState(&stateManager);
 GraphState		graphState(&stateManager, "Tuner", &model);
 
-#define FLANGE_DELAY_LENGTH (6*AUDIO_BLOCK_SAMPLES)
-short delayline[FLANGE_DELAY_LENGTH];
+
+
+
+Menu *menu;
+
+static const char *a0[] =
+{
+	"CHEBY8", "CHEBY16", "CHEBY32", "CHEBY64"
+};
+
+static const char *a1[] =
+{
+	"NULL"
+};
+
 
 /**
  * Now this function starts all audio
@@ -61,18 +74,10 @@ void audio()
 	model.modules[1] = &modChorus;
 	model.modules[2] = &modOutput;
 
-	u8g2.setCursor(0,6);
-	u8g2.print("1");
-	u8g2.sendBuffer();
-
 	modInput.getOutputs()[0] = 2;
 	modChorus.getInputs()[0] = 1;
 	modChorus.getOutputs()[0] = 3;
 	modOutput.getInputs()[0] = 2;
-
-	u8g2.setCursor(0,12);
-	u8g2.print("2");
-	u8g2.sendBuffer();
 
 	result_t r = model.bakeAudioFrom(1);
 	if(r != SUCCESS)	gdisp_showPopupResult(&u8g2, r, "Something's bad");
@@ -118,24 +123,40 @@ void setup()
 
 	// State Managing
 	r = stateManager.setState(0, &titleState);
-	if(r < 0)
-	{
-		gdisp_showPopupResult(&u8g2, r, "Could not load title!");
-	}
+	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load title!");
 
 	r = stateManager.setState(1, &mainMenuState);
-	if(r < 0)
-	{
-		gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
-	}
+	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
 
 	r = stateManager.setState(2, &graphState);
-	if(r < 0)
-	{
-		gdisp_showPopupResult(&u8g2, r, "Could not load graph!");
-	}
+	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load graph!");
 
-	stateManager.setCurrentState(0);
+
+	BoundedValue bv_THIS = BoundedValue(0, -1, 0, 1);
+	EnumValue ev_Enum_Value = EnumValue(4, 1, a0);
+	BoundedValue bv_resonance = BoundedValue(4.30, 0, 0.1, 5);
+	BoundedValue bv_frequency = BoundedValue(110.0, 20, 10, 2000);
+	BoundedValue bv_something_else = BoundedValue(5, 0, 1, 10);
+	BoundedValue bv_delay = BoundedValue(0, 0.1, 10);
+	EnumValue ev_nothing = EnumValue(1,0,a1);
+
+	//TEMP: menu
+	menu = new Menu(&u8g2, "Test GUI", true);
+
+	menu->pushBoundedValue("THIS", &bv_THIS);
+	menu->push("More Text");
+	menu->pushEnumValue("Enum Value", &ev_Enum_Value);
+	menu->push("");
+	menu->pushBoundedValue("resonance", &bv_resonance);
+	menu->pushBoundedValue("frequency", &bv_frequency);
+	menu->pushBoundedValue("something else", &bv_something_else);
+	menu->pushBoundedValue("delay", &bv_delay);
+	menu->pushEnumValue("nothing", &ev_nothing);
+
+
+	menu->show();
+
+	//stateManager.setCurrentState(0);
 	u8g2.sendBuffer();
 }
 
@@ -216,8 +237,11 @@ uint64_t tick = 0;
 
 void loop()
 {
-	events();
-	stateManager.loop();
+	//events();
+	//stateManager.loop();
+
+	menu->setFocus(tick/16 % 9);
+	menu->update();
 
 	u8g2.sendBuffer();
 

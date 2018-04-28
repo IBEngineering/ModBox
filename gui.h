@@ -11,6 +11,9 @@
 #include <U8g2lib.h>
 
 #include "hardware.h"
+#include "value_bounded.h"
+#include "value_enum.h"
+#include "value_value.h"
 #include "results.h"
 
 // Defines
@@ -43,6 +46,15 @@
 #ifdef GDISP_HARDWARE
 #define GDISP		U8G2_ST7920_128X64_F_HW_SPI
 #endif
+
+// Item type
+typedef enum
+{
+	TEXT = 0,
+	VALUE_BOUNDED = 1,
+	VALUE_BUFFER = 2,
+	VALUE_ENUM = 3
+} ItemType;
 
 // Screen
 class Screen
@@ -77,6 +89,8 @@ public:
 	result_t show();
 	result_t update();
 	result_t push(const char *item);
+	result_t pushBoundedValue(const char *item, BoundedValue *val);
+	result_t pushEnumValue(const char *item, EnumValue *val);
 	// TODO: add push values for different types (of values)
 	uint8_t getFocus();
 	result_t setFocus(uint8_t focus);
@@ -96,6 +110,8 @@ private:
 
 //	uint8_t count;					// Amount of pushed items
 	const char **items;
+	ItemType *types;
+	Value **values;
 };
 
 // Plot

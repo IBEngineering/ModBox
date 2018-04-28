@@ -89,6 +89,8 @@ Menu::Menu(GDISPLAY *disp, const char *title, bool scrollable) : Screen(disp,tit
 	this->lastFocus = 0;
 	this->currFocus = 0;
 	this->count = 0;
+	this->values = new Value*[256];		/* 256 values  */
+	this->types = new ItemType[256];	/* 256 types   */
 	this->items = new const char*[256]; /* 256 strings */
 }
 
@@ -106,8 +108,55 @@ void Menu::drawItemsStatic()
 
 	for(i = 0; i < count; i++)
 	{
-		disp->setCursor(GDISP_MENU_X, GDISP_MENU_TEXT_Y+GDISP_MENU_NEXTLINE*i);
+		uint8_t y = GDISP_MENU_TEXT_Y+GDISP_MENU_NEXTLINE*i;
+		disp->setCursor(GDISP_MENU_X, y);
 		disp->print(items[i]);
+		if(types[i] == VALUE_BOUNDED)
+		{
+			BoundedValue *bval = (BoundedValue *)values[i];
+
+			// Draw arrows
+			if(bval->getValue() > bval->getMinimum())
+			{
+				disp->setCursor(83, y);
+				disp->print("<");
+			}
+			if(bval->getValue() < bval->getMaximum())
+			{
+				disp->setCursor(117, y);
+				disp->print(">");
+			}
+
+			// Draw text
+			char buffer[16];	// TODO: declare this in a macro/global
+			sprintf(buffer, "%.5g", bval->getValue());
+			uint8_t w = disp->getStrWidth(buffer);
+			disp->setCursor(101-w/2, y);
+			disp->print(buffer);
+		}
+		else if(types[i] == VALUE_ENUM)
+		{
+			EnumValue *eval = (EnumValue *)values[i];
+
+			// Draw arrows
+			if(eval->getValue() > 0)
+			{
+				disp->setCursor(83, y);
+				disp->print("<");
+			}
+			if(eval->getValue() < eval->getValueCount())
+			{
+				disp->setCursor(117, y);
+				disp->print(">");
+			}
+
+			// Draw text
+			char buffer[8];	// 7 chars + \0
+			sprintf(buffer, "%.7s", eval->getNames()[eval->getValue()]);
+			uint8_t w = disp->getStrWidth(buffer);
+			disp->setCursor(101-w/2, y);
+			disp->print(buffer);
+		}
 	}
 }
 
@@ -147,6 +196,27 @@ result_t Menu::push(const char *item)
 {
 	if(count > ((scrollable) ? 255 : GDISP_MENU_MAXLINES))	return OUT_OF_BOUNDS;
 	items[count] = item;
+	types[count] = TEXT;
+	count++;
+	return SUCCESS;
+}
+
+result_t Menu::pushBoundedValue(const char *item, BoundedValue *val)
+{
+	if(count > ((scrollable) ? 255 : GDISP_MENU_MAXLINES))	return OUT_OF_BOUNDS;
+	items[count] = item;
+	types[count] = VALUE_BOUNDED;
+	values[count] = val;
+	count++;
+	return SUCCESS;
+}
+
+result_t Menu::pushEnumValue(const char *item, EnumValue *val)
+{
+	if(count > ((scrollable) ? 255 : GDISP_MENU_MAXLINES))	return OUT_OF_BOUNDS;
+	items[count] = item;
+	types[count] = VALUE_ENUM;
+	values[count] = val;
 	count++;
 	return SUCCESS;
 }
@@ -167,6 +237,8 @@ result_t Menu::setFocus(uint8_t focus)
 Menu::~Menu()
 {
 	delete[] items;
+	delete[] types;
+	delete[] values;
 }
 
 // Plot

@@ -61,12 +61,21 @@ static const char *a1[] =
 };
 
 
+BoundedValue bv_THIS = BoundedValue(0, -1, 0, 1);
+EnumValue ev_Enum_Value = EnumValue(4, 1, a0);
+BoundedValue bv_resonance = BoundedValue(4.30, 0, 0.1, 5);
+BoundedValue bv_frequency = BoundedValue(110.0, 20, 10, 2000);
+BoundedValue bv_something_else = BoundedValue(5, 0, 1, 10);
+BoundedValue bv_delay = BoundedValue(0, 0.1, 10);
+EnumValue ev_nothing = EnumValue(1,0,a1);
+
+
 /**
  * Now this function starts all audio
  */
 void audio()
 {
-	AudioMemory(64);
+	AudioMemory(32);
 
 //	sgtl = new AudioControlSGTL5000();
 
@@ -132,31 +141,25 @@ void setup()
 	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load graph!");
 
 
-	BoundedValue bv_THIS = BoundedValue(0, -1, 0, 1);
-	EnumValue ev_Enum_Value = EnumValue(4, 1, a0);
-	BoundedValue bv_resonance = BoundedValue(4.30, 0, 0.1, 5);
-	BoundedValue bv_frequency = BoundedValue(110.0, 20, 10, 2000);
-	BoundedValue bv_something_else = BoundedValue(5, 0, 1, 10);
-	BoundedValue bv_delay = BoundedValue(0, 0.1, 10);
-	EnumValue ev_nothing = EnumValue(1,0,a1);
+//	//TEMP: menu
+//	menu = new Menu(&u8g2, "Test GUI", true);
+//
+//	menu->pushBoundedValue("THIS", &bv_THIS);
+//	menu->push("More Text");
+//	menu->pushEnumValue("Enum Value", &ev_Enum_Value);
+//	menu->push("");
+//	menu->pushBoundedValue("resonance", &bv_resonance);
+//	menu->pushBoundedValue("frequency", &bv_frequency);
+//	menu->pushBoundedValue("something else", &bv_something_else);
+//	menu->pushBoundedValue("delay", &bv_delay);
+//	menu->pushEnumValue("nothing", &ev_nothing);
+//	menu->push("(hidden)");
+//
+//	menu->show();
+//	u8g2.clearBuffer();
+//	menu->show();
 
-	//TEMP: menu
-	menu = new Menu(&u8g2, "Test GUI", true);
-
-	menu->pushBoundedValue("THIS", &bv_THIS);
-	menu->push("More Text");
-	menu->pushEnumValue("Enum Value", &ev_Enum_Value);
-	menu->push("");
-	menu->pushBoundedValue("resonance", &bv_resonance);
-	menu->pushBoundedValue("frequency", &bv_frequency);
-	menu->pushBoundedValue("something else", &bv_something_else);
-	menu->pushBoundedValue("delay", &bv_delay);
-	menu->pushEnumValue("nothing", &ev_nothing);
-
-
-	menu->show();
-
-	//stateManager.setCurrentState(0);
+	stateManager.setCurrentState(0);
 	u8g2.sendBuffer();
 }
 
@@ -237,11 +240,11 @@ uint64_t tick = 0;
 
 void loop()
 {
-	//events();
-	//stateManager.loop();
+	events();
+	stateManager.loop();
 
-	menu->setFocus(tick/16 % 9);
-	menu->update();
+//	menu->setFocus(tick/4 % 10);
+//	menu->update();
 
 	u8g2.sendBuffer();
 

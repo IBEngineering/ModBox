@@ -102,61 +102,91 @@ void Menu::drawTitle()
 	disp->drawHLine(64-(w+3)/2, GDISP_MENU_TITLE_Y+2, w+2);
 }
 
+void Menu::drawScrollBar()
+{
+	// Draw arrows
+	if(topFocus > 0)
+	{
+		disp->drawPixel(124, 9);
+		disp->drawHLine(123, 10, 3);
+		disp->drawHLine(122, 11, 5);
+		disp->drawVLine(124, 12, 4);
+	}
+	if(topFocus + GDISP_MENU_MAXLINES < count)
+	{
+		disp->drawVLine(124, 56, 4);
+		disp->drawHLine(122, 60, 5);
+		disp->drawHLine(123, 61, 3);
+		disp->drawPixel(124, 62);
+	}
+
+	// Draw box
+	disp->drawFrame(123, 17, 3, 38);
+
+	// Draw slider
+	disp->drawVLine(124, 18 + (topFocus*38)/count, (GDISP_MENU_MAXLINES*38)/count);
+}
+
+void Menu::drawItem(uint8_t ii, uint8_t mi)
+{
+	uint8_t y = GDISP_MENU_TEXT_Y+GDISP_MENU_NEXTLINE*mi;
+	disp->setCursor(GDISP_MENU_X, y);
+	disp->print(items[ii]);
+	if(types[ii] == VALUE_BOUNDED)
+	{
+		BoundedValue *bval = (BoundedValue *)values[ii];
+
+		// Draw arrows
+		if(bval->getValue() > bval->getMinimum())
+		{
+			disp->setCursor(83, y);
+			disp->print("<");
+		}
+		if(bval->getValue() < bval->getMaximum())
+		{
+			disp->setCursor(117, y);
+			disp->print(">");
+		}
+
+		// Draw text
+		char buffer[16];	// TODO: declare this in a macro/global
+		sprintf(buffer, "%.5g", bval->getValue());
+		uint8_t w = disp->getStrWidth(buffer);
+		disp->setCursor(101-w/2, y);
+		disp->print(buffer);
+	}
+	else if(types[ii] == VALUE_ENUM)
+	{
+		EnumValue *eval = (EnumValue *)values[ii];
+
+		// Draw arrows
+		if(eval->getValue() > 0)
+		{
+			disp->setCursor(83, y);
+			disp->print("<");
+		}
+		if(eval->getValue() < eval->getValueCount() - 1)
+		{
+			disp->setCursor(117, y);
+			disp->print(">");
+		}
+
+		// Draw text
+		char buffer[8];	// 7 chars + \0
+		sprintf(buffer, "%.7s", eval->getNames()[eval->getValue()]);
+		uint8_t w = disp->getStrWidth(buffer);
+		disp->setCursor(101-w/2, y);
+		disp->print(buffer);
+	}
+}
+
 void Menu::drawItemsStatic()
 {
 	uint8_t i;
 
 	for(i = 0; i < count; i++)
 	{
-		uint8_t y = GDISP_MENU_TEXT_Y+GDISP_MENU_NEXTLINE*i;
-		disp->setCursor(GDISP_MENU_X, y);
-		disp->print(items[i]);
-		if(types[i] == VALUE_BOUNDED)
-		{
-			BoundedValue *bval = (BoundedValue *)values[i];
-
-			// Draw arrows
-			if(bval->getValue() > bval->getMinimum())
-			{
-				disp->setCursor(83, y);
-				disp->print("<");
-			}
-			if(bval->getValue() < bval->getMaximum())
-			{
-				disp->setCursor(117, y);
-				disp->print(">");
-			}
-
-			// Draw text
-			char buffer[16];	// TODO: declare this in a macro/global
-			sprintf(buffer, "%.5g", bval->getValue());
-			uint8_t w = disp->getStrWidth(buffer);
-			disp->setCursor(101-w/2, y);
-			disp->print(buffer);
-		}
-		else if(types[i] == VALUE_ENUM)
-		{
-			EnumValue *eval = (EnumValue *)values[i];
-
-			// Draw arrows
-			if(eval->getValue() > 0)
-			{
-				disp->setCursor(83, y);
-				disp->print("<");
-			}
-			if(eval->getValue() < eval->getValueCount())
-			{
-				disp->setCursor(117, y);
-				disp->print(">");
-			}
-
-			// Draw text
-			char buffer[8];	// 7 chars + \0
-			sprintf(buffer, "%.7s", eval->getNames()[eval->getValue()]);
-			uint8_t w = disp->getStrWidth(buffer);
-			disp->setCursor(101-w/2, y);
-			disp->print(buffer);
-		}
+		drawItem(i,i);
 	}
 }
 
@@ -166,13 +196,29 @@ void Menu::drawItemsDynamic()
 	{
 		drawItemsStatic();
 	}
+	else
+	{
+		drawScrollBar();
+		for(int i = 0; i < GDISP_MENU_MAXLINES; i++)
+		{
+			drawItem(topFocus + i, i);
+		}
+	}
 }
 
 void Menu::drawFocus(bool changed)
 {
+	uint8_t cf = currFocus;
+	uint8_t lf = lastFocus;
+	if(scrollable)
+	{
+		cf -= topFocus;
+		lf -= topFocus;
+	}
+
 	disp->setDrawColor(2);
-	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*currFocus, (scrollable)?121:128, 7);
-	if(changed)	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*lastFocus, (scrollable)?121:128, 7);
+	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*cf, (scrollable)?121:128, 7);
+	if(changed)	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*lf, (scrollable)?121:128, 7);
 	disp->setDrawColor(1);
 }
 
@@ -229,8 +275,40 @@ uint8_t Menu::getFocus()
 result_t Menu::setFocus(uint8_t focus)
 {
 	if(focus >= count) return OUT_OF_BOUNDS;
+
 	lastFocus = currFocus;
 	currFocus = focus;
+
+	if(scrollable)
+	{
+		if(focus < topFocus)
+		{
+			topFocus = focus;
+			disp->setDrawColor(0);
+			disp->drawBox(0, GDISP_MENU_TITLE_Y+3, 128, 64-GDISP_MENU_TITLE_Y-3);
+			disp->setDrawColor(1);
+			drawItemsDynamic();
+			drawFocus(false);
+		}
+		else if(focus >= topFocus + GDISP_MENU_MAXLINES)
+		{
+			topFocus = focus - GDISP_MENU_MAXLINES + 1;
+			disp->setDrawColor(0);
+			disp->drawBox(0, GDISP_MENU_TITLE_Y+3, 128, 64-GDISP_MENU_TITLE_Y-2);
+			disp->setDrawColor(1);
+			drawItemsDynamic();
+			drawFocus(false);
+		}
+		else
+		{
+			drawFocus(true);
+		}
+	}
+	else
+	{
+		drawFocus(true);
+	}
+
 	return SUCCESS;
 }
 

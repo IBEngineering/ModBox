@@ -34,7 +34,7 @@
 #define GDISP_MENU_MAXLINES		9
 #define GDISP_MENU_NEXTLINE		6
 #define GDISP_MENU_X			1
-#define GDISP_MENU_TITLE_Y		6
+#define GDISP_MENU_TITLE_Y		5
 #define GDISP_MENU_TEXT_Y		15
 
 #define GDISP_PLOT_TITLE_Y		6
@@ -99,6 +99,8 @@ public:
 	uint8_t count;					// Arount of pushed items
 private:
 	void drawTitle();
+	void drawScrollBar();
+	void drawItem(uint8_t ii, uint8_t mi);
 	void drawItemsStatic();			// Without scrolling
 	void drawItemsDynamic();		// With scrolling
 	void drawFocus(bool d);

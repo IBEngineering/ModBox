@@ -86,14 +86,16 @@ class Menu : public Screen
 {
 public:
 	Menu(GDISPLAY *disp, const char *title, bool scrollable);
-	result_t show();
-	result_t update();
-	result_t push(const char *item);
-	result_t pushBoundedValue(const char *item, BoundedValue *val);
-	result_t pushEnumValue(const char *item, EnumValue *val);
-	// TODO: add push values for different types (of values)
-	uint8_t getFocus();
-	result_t setFocus(uint8_t focus);
+	result_t	show();
+	result_t	updateItem(uint8_t i);
+	result_t	push(const char *item);
+	result_t	pushBoundedValue(const char *item, BoundedValue *val);
+	result_t	pushEnumValue(const char *item, EnumValue *val);
+	uint8_t		getFocus();
+	result_t	setFocus(uint8_t focus);
+	const char	*getItem(uint8_t i);
+	ItemType	getItemType(uint8_t i);
+	Value		*getValue(uint8_t i);
 	~Menu();
 
 	uint8_t count;					// Arount of pushed items

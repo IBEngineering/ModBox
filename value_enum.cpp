@@ -21,31 +21,25 @@ EnumValue::EnumValue(uint8_t valueCount, uint8_t value, const char **names) {
 
 EnumValue &EnumValue::operator+=(float value)
 {
-	this->value += value;
-	this->value %= valueCount;
+	if(this->value < valueCount - value)	this->value += value;
 	return *this;
 }
 
 EnumValue &EnumValue::operator+=(int value)
 {
-	this->value += value;
-	this->value %= valueCount;
+	if(this->value < valueCount - value)	this->value += value;
 	return *this;
 }
 
 EnumValue &EnumValue::operator-=(float value)
 {
-	if(this->value == 0) this->value = valueCount;	// Set to valueCount to prevent underflow
-	this->value -= (uint8_t)value % valueCount;		// Modulo valueCount to prevent underflow
-	this->value %= valueCount;
+	if(this->value > 0)	this->value -= value;
 	return *this;
 }
 
 EnumValue &EnumValue::operator-=(int value)
 {
-	if(this->value == 0) this->value = valueCount;	// Set to valueCount to prevent underflow
-	this->value -= value % valueCount;				// Modulo valueCount to prevent underflow
-	this->value %= valueCount;
+	if(this->value > 0)	this->value -= value;
 	return *this;
 }
 

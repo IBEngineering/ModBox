@@ -228,14 +228,19 @@ result_t Menu::show()
 	(scrollable) ? drawItemsDynamic() : drawItemsStatic();
 	drawFocus(false);
 
-	return UNIMPLEMENTED;
+	return SUCCESS;
 }
 
-result_t Menu::update()
+result_t Menu::updateItem(uint8_t i)
 {
-	drawFocus(true);
+	drawFocus(false);
+	disp->setDrawColor(0);
+	disp->drawBox(0, 9+GDISP_MENU_NEXTLINE*i, (scrollable)?121:128, 7);
+	disp->setDrawColor(1);
+	drawItem(i, i - topFocus);
+	drawFocus(false);
 
-	return UNIMPLEMENTED;
+	return SUCCESS;
 }
 
 result_t Menu::push(const char *item)
@@ -311,6 +316,10 @@ result_t Menu::setFocus(uint8_t focus)
 
 	return SUCCESS;
 }
+
+const char	*Menu::getItem(uint8_t i)		{return items[i];}
+ItemType	Menu::getItemType(uint8_t i)	{return types[i];}
+Value		*Menu::getValue(uint8_t i)		{return values[i];}
 
 Menu::~Menu()
 {

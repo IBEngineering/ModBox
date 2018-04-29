@@ -13,6 +13,7 @@
 #include "results.h"
 #include "state_graph.h"
 #include "state_menu_main.h"
+#include "state_menu_test.h"
 #include "state_mgr.h"
 #include "state_title.h"
 #include "stk_pitch_shift.h"
@@ -40,35 +41,11 @@ static InputModule modInput(1);
 static ChorusModule modChorus(2);
 static OutputModule modOutput(3);
 
-StateManager	stateManager(3, &encc1, &encc2, &encc3, &encc4, &u8g2);
+StateManager	stateManager(4, &encc1, &encc2, &encc3, &encc4, &u8g2);
 TitleState		titleState(&stateManager);
 MainMenuState	mainMenuState(&stateManager);
 GraphState		graphState(&stateManager, "Tuner", &model);
-
-
-
-
-Menu *menu;
-
-static const char *a0[] =
-{
-	"CHEBY8", "CHEBY16", "CHEBY32", "CHEBY64"
-};
-
-static const char *a1[] =
-{
-	"NULL"
-};
-
-
-BoundedValue bv_THIS = BoundedValue(0, -1, 0, 1);
-EnumValue ev_Enum_Value = EnumValue(4, 1, a0);
-BoundedValue bv_resonance = BoundedValue(4.30, 0, 0.1, 5);
-BoundedValue bv_frequency = BoundedValue(110.0, 20, 10, 2000);
-BoundedValue bv_something_else = BoundedValue(5, 0, 1, 10);
-BoundedValue bv_delay = BoundedValue(0, 0.1, 10);
-EnumValue ev_nothing = EnumValue(1,0,a1);
-
+TestMenuState	testMenuState(&stateManager);
 
 /**
  * Now this function starts all audio
@@ -140,20 +117,13 @@ void setup()
 	r = stateManager.setState(2, &graphState);
 	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load graph!");
 
+	r = stateManager.setState(3, &testMenuState);
+	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load test menu!");
 
 //	//TEMP: menu
 //	menu = new Menu(&u8g2, "Test GUI", true);
 //
-//	menu->pushBoundedValue("THIS", &bv_THIS);
-//	menu->push("More Text");
-//	menu->pushEnumValue("Enum Value", &ev_Enum_Value);
-//	menu->push("");
-//	menu->pushBoundedValue("resonance", &bv_resonance);
-//	menu->pushBoundedValue("frequency", &bv_frequency);
-//	menu->pushBoundedValue("something else", &bv_something_else);
-//	menu->pushBoundedValue("delay", &bv_delay);
-//	menu->pushEnumValue("nothing", &ev_nothing);
-//	menu->push("(hidden)");
+
 //
 //	menu->show();
 //	u8g2.clearBuffer();
@@ -187,6 +157,24 @@ void events()
 		if(r == EVENT_IGNORED)
 		{
 			r = stateManager.onConfirm(0b00000001);
+		}
+	}
+
+	if(encc3.c.current_read())
+	{
+		r = stateManager.onAnything();
+		if(r == EVENT_IGNORED)
+		{
+			r = stateManager.onReturn(0b00000000);
+		}
+	}
+
+	if(encc4.c.current_read())
+	{
+		r = stateManager.onAnything();
+		if(r == EVENT_IGNORED)
+		{
+			r = stateManager.onReturn(0b00000001);
 		}
 	}
 

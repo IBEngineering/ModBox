@@ -7,4 +7,8 @@
 
 #include "value_value.h"
 
+Value	&Value::operator+=(float value)	{return *this;}
+Value	&Value::operator+=(int value)		{return *this;}
+Value	&Value::operator-=(float value)	{return *this;}
+Value	&Value::operator-=(int value)		{return *this;}
 Value::~Value(){}

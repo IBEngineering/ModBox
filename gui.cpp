@@ -252,6 +252,16 @@ result_t Menu::push(const char *item)
 	return SUCCESS;
 }
 
+result_t	Menu::pushAny(const char *item, Value *val)
+{
+	if(val == NULL)					return push(item);
+	if(val->identicator() == 0x01)	return pushBoundedValue(item, (BoundedValue *)val);
+	if(val->identicator() == 0x02)	return pushEnumValue(item, (EnumValue *)val);
+
+	// Upon nothing
+	return INVALID_ARGUMENT;
+}
+
 result_t Menu::pushBoundedValue(const char *item, BoundedValue *val)
 {
 	if(count > ((scrollable) ? 255 : GDISP_MENU_MAXLINES))	return OUT_OF_BOUNDS;

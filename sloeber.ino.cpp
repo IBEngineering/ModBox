@@ -2,7 +2,7 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2018-04-28 16:22:37
+//This file has been generated on 2018-05-20 13:45:11
 
 #include "Arduino.h"
 #include "Arduino.h"
@@ -17,13 +17,14 @@
 #include "model_model.h"
 #include "pins.h"
 #include "results.h"
-#include "state_graph.h"
+#include "state_graph_tuner.h"
 #include "state_menu_main.h"
 #include "state_menu_test.h"
 #include "state_mgr.h"
 #include "state_title.h"
 #include "stk_pitch_shift.h"
 #include "value_bounded.h"
+#include "modules/bitcrusher.h"
 #include "modules/chorus.h"
 #include "modules/input.h"
 #include "modules/pitch_shifter.h"

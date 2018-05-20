@@ -25,7 +25,6 @@ public:
 	GraphState(StateManager *mgr, const char *title, Model *model);
 	void setup();
 	void loop();
-	result_t onConfirm(uint8_t flag);
 	result_t onScrollPri(uint8_t flag, int16_t v);
 	virtual ~GraphState();
 protected:
@@ -39,6 +38,7 @@ protected:
 
 	void drawFocus(int8_t f);
 	void drawModule(uint8_t id);
+	result_t onReFocus(uint8_t flag);
 
 	void isetup();
 	void iloop();

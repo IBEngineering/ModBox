@@ -14,8 +14,6 @@
 class TestMenuState : public MenuState {
 public:
 	TestMenuState(StateManager *mgr);
-	result_t onScrollPri(uint8_t flag, int16_t v);
-	result_t onScrollSec(uint8_t flag, int16_t v);
 	result_t onReturn(uint8_t flag);
 	virtual ~TestMenuState();
 private:

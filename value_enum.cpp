@@ -43,6 +43,7 @@ EnumValue &EnumValue::operator-=(int value)
 	return *this;
 }
 
+uint8_t		EnumValue::identicator()			{return 0x02;}
 uint8_t		EnumValue::getValueCount()			{return valueCount;}
 uint8_t		EnumValue::getValue()				{return value;}
 void		EnumValue::setValue(uint8_t value)	{this->value = value;}

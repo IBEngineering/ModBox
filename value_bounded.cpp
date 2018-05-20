@@ -53,6 +53,7 @@ BoundedValue	&BoundedValue::operator-=(int value)
 	return *this;
 }
 
+uint8_t BoundedValue::identicator()	{return 0x01;}
 float BoundedValue::getMinimum()	{return min;}
 float BoundedValue::getStep()		{return step;}
 float BoundedValue::getMaximum()	{return max;}

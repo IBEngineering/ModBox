@@ -8,21 +8,23 @@
 #ifndef VALUE_BOUNDED_H_
 #define VALUE_BOUNDED_H_
 
+
 #include "value_value.h"
 
-class BoundedValue: public Value {
+class BoundedValue : public Value {
 public:
-	BoundedValue(float value, float min, float step, float max);
-	BoundedValue(float min, float step, float max);
+					BoundedValue(float value, float min, float step, float max);
+					BoundedValue(float min, float step, float max);
 	BoundedValue	&operator+=(float value);
 	BoundedValue	&operator+=(int value);
 	BoundedValue	&operator-=(float value);
 	BoundedValue	&operator-=(int value);
-	float getMinimum();
-	float getStep();
-	float getMaximum();
-	float getValue();
-	~BoundedValue();
+	uint8_t			identicator();
+	float			getMinimum();
+	float			getStep();
+	float			getMaximum();
+	float			getValue();
+					~BoundedValue();
 protected:
 	bool withinBounds();
 	void forceBounds();

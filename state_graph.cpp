@@ -125,10 +125,10 @@ void GraphState::drawModule(uint8_t id)
 
 void GraphState::setup()
 {
-	drawModule(1);
-	drawFocus(0);
 	currSelect = 0;
 	lastSelect = 0;
+	drawModule(1);
+	drawFocus(0);
 }
 
 void GraphState::loop()
@@ -136,7 +136,13 @@ void GraphState::loop()
 
 }
 
-result_t GraphState::onConfirm(uint8_t flag)
+/**
+ * This function needs to be called when
+ * the extender class feels like the focus
+ * needs to shift
+ * (AKA when currSelect == 0)
+ */
+result_t GraphState::onReFocus(uint8_t flag)
 {
 	if(currSelect == 0)	return result_t::EVENT_IGNORED;
 	else if(currSelect < 0)

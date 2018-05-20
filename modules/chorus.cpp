@@ -46,6 +46,6 @@ ChorusModule::~ChorusModule()
 {
 	delete values[0];
 	delete[] values;
-	delete inputs;
-	delete outputs;
+	delete[] inputs;
+	delete[] outputs;
 }

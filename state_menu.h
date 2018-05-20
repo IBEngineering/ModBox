@@ -14,6 +14,8 @@
 class MenuState : public ProgramState {
 public:
 	MenuState(StateManager *mgr, const char *title);
+	result_t onScrollPri(uint8_t flag, int16_t v);
+	result_t onScrollSec(uint8_t flag, int16_t v);
 	void setup();
 	void loop();
 	~MenuState();

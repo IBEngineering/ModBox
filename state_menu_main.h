@@ -10,11 +10,10 @@
 
 #include "state_menu.h"
 
-class MainMenuState: public MenuState {
+class MainMenuState : public MenuState {
 public:
 	MainMenuState(StateManager *mgr);
 	result_t onAnything();
-	result_t onScrollPri(uint8_t flag, int16_t v);
 	result_t onConfirm(uint8_t flag);
 	~MainMenuState();
 private:

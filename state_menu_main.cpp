@@ -19,21 +19,6 @@ result_t MainMenuState::onAnything()
 	return EVENT_IGNORED;
 }
 
-result_t MainMenuState::onScrollPri(uint8_t flag, int16_t v)
-{
-	result_t r = NULL_POINTER;
-	if(v == 0)	return EVENT_IGNORED;
-	if(v > 0)
-	{
-		r = menu->setFocus(menu->getFocus() + 1);
-	}
-	else if(menu->getFocus() > 0)	// && v < 0
-	{
-		r = menu->setFocus(menu->getFocus() - 1);
-	}
-	if(r == SUCCESS)	needsUpdate = true;
-	return EVENT_CONSUMED;
-}
 
 result_t MainMenuState::onConfirm(uint8_t flag)
 {

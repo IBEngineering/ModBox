@@ -11,7 +11,7 @@
 #include "model_model.h"
 #include "pins.h"
 #include "results.h"
-#include "state_graph.h"
+#include "state_graph_tuner.h"
 #include "state_menu_main.h"
 #include "state_menu_test.h"
 #include "state_mgr.h"
@@ -19,6 +19,7 @@
 #include "stk_pitch_shift.h"
 #include "value_bounded.h"
 
+#include "modules/bitcrusher.h"
 #include "modules/chorus.h"
 #include "modules/input.h"
 #include "modules/pitch_shifter.h"
@@ -38,13 +39,13 @@ static Model model(4);
 
 static InputModule modInput(1);
 //static PitchShifterModule modPitchShifter(1);
-static ChorusModule modChorus(2);
+static BitCrusherModule modEffect(2);
 static OutputModule modOutput(3);
 
 StateManager	stateManager(4, &encc1, &encc2, &encc3, &encc4, &u8g2);
 TitleState		titleState(&stateManager);
 MainMenuState	mainMenuState(&stateManager);
-GraphState		graphState(&stateManager, "Tuner", &model);
+TunerState		tunerState(&stateManager, &model);
 TestMenuState	testMenuState(&stateManager);
 
 /**
@@ -57,12 +58,12 @@ void audio()
 //	sgtl = new AudioControlSGTL5000();
 
 	model.modules[0] = &modInput;
-	model.modules[1] = &modChorus;
+	model.modules[1] = &modEffect;
 	model.modules[2] = &modOutput;
 
 	modInput.getOutputs()[0] = 2;
-	modChorus.getInputs()[0] = 1;
-	modChorus.getOutputs()[0] = 3;
+	modEffect.getInputs()[0] = 1;
+	modEffect.getOutputs()[0] = 3;
 	modOutput.getInputs()[0] = 2;
 
 	result_t r = model.bakeAudioFrom(1);
@@ -114,8 +115,8 @@ void setup()
 	r = stateManager.setState(1, &mainMenuState);
 	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load main menu!");
 
-	r = stateManager.setState(2, &graphState);
-	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load graph!");
+	r = stateManager.setState(2, &tunerState);
+	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load tuner!");
 
 	r = stateManager.setState(3, &testMenuState);
 	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load test menu!");

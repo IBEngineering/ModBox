@@ -89,6 +89,7 @@ public:
 	result_t	show();
 	result_t	updateItem(uint8_t i);
 	result_t	push(const char *item);
+	result_t	pushAny(const char *item, Value *val);
 	result_t	pushBoundedValue(const char *item, BoundedValue *val);
 	result_t	pushEnumValue(const char *item, EnumValue *val);
 	uint8_t		getFocus();

@@ -37,44 +37,44 @@ static EnumValue ev_nothing = EnumValue(1,0,a1);
 TestMenuState::TestMenuState(StateManager *mgr) : MenuState(mgr, "Test GUI") {
 }
 
-result_t TestMenuState::onScrollPri(uint8_t flag, int16_t v)
-{
-	if(v == 0)	return EVENT_IGNORED;
-	if(v > 0)
-	{
-		menu->setFocus(menu->getFocus() + 1);
-	}
-	else if(menu->getFocus() > 0)	// && v < 0
-	{
-		menu->setFocus(menu->getFocus() - 1);
-	}
-	return EVENT_CONSUMED;
-}
-
-result_t TestMenuState::onScrollSec(uint8_t flag, int16_t v)
-{
-	if(v==0)	return EVENT_IGNORED;
-
-	ItemType type = menu->getItemType(menu->getFocus());
-	if(type == VALUE_BOUNDED)
-	{
-		BoundedValue *bval = (BoundedValue *)menu->getValue(menu->getFocus());
-		*(bval) += (v<0)?-1:1;
-	}
-	else if(type == VALUE_ENUM)
-	{
-		EnumValue *eval = (EnumValue *)menu->getValue(menu->getFocus());
-		*(eval) += (v<0)?-1:1;
-	}
-	else
-	{
-		return EVENT_IGNORED;
-	}
-
-	menu->updateItem(menu->getFocus());
-
-	return EVENT_CONSUMED;
-}
+//result_t TestMenuState::onScrollPri(uint8_t flag, int16_t v)
+//{
+//	if(v == 0)	return EVENT_IGNORED;
+//	if(v > 0)
+//	{
+//		menu->setFocus(menu->getFocus() + 1);
+//	}
+//	else if(menu->getFocus() > 0)	// && v < 0
+//	{
+//		menu->setFocus(menu->getFocus() - 1);
+//	}
+//	return EVENT_CONSUMED;
+//}
+//
+//result_t TestMenuState::onScrollSec(uint8_t flag, int16_t v)
+//{
+//	if(v==0)	return EVENT_IGNORED;
+//
+//	ItemType type = menu->getItemType(menu->getFocus());
+//	if(type == VALUE_BOUNDED)
+//	{
+//		BoundedValue *bval = (BoundedValue *)menu->getValue(menu->getFocus());
+//		*(bval) += (v<0)?-1:1;
+//	}
+//	else if(type == VALUE_ENUM)
+//	{
+//		EnumValue *eval = (EnumValue *)menu->getValue(menu->getFocus());
+//		*(eval) += (v<0)?-1:1;
+//	}
+//	else
+//	{
+//		return EVENT_IGNORED;
+//	}
+//
+//	menu->updateItem(menu->getFocus());
+//
+//	return EVENT_CONSUMED;
+//}
 
 result_t TestMenuState::onReturn(uint8_t flag)
 {

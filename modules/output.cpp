@@ -29,6 +29,8 @@ uint8_t		OutputModule::spConnOut(AudioStream **arrStore, AudioStream **used, int
 	return 0;
 }
 
+void OutputModule::updateForValue(AudioStream **arrStore, uint8_t val){}
+
 OutputModule::~OutputModule() {
 	delete[] inputs;
 }

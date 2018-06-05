@@ -8,11 +8,11 @@
 #include "pitch_shifter.h"
 #include "../stk_pitch_shift.h"
 
-static const char *valueNames[] = {"shift", };
+static const char *_vn[] = {"shift", };
 
-PitchShifterModule::PitchShifterModule(uint8_t id) : Module(id, "PSH", valueNames, 1,1,1,1) {
+PitchShifterModule::PitchShifterModule(uint8_t id) : Module(id, "PSH", _vn, 1,1,1,1) {
 	values = new Value*[1];
-	values[0] = new BoundedValue(0.0, 0.01, 3.0);
+	values[0] = new BoundedValue(1.0, 0.0, 0.01, 3.0);
 
 	inputs = new uint8_t[1]		{0};
 	outputs = new uint8_t[1]	{0};
@@ -21,7 +21,7 @@ PitchShifterModule::PitchShifterModule(uint8_t id) : Module(id, "PSH", valueName
 uint8_t PitchShifterModule::spStream(AudioStream **arrStore)
 {
 	StkPitchShift *s = new StkPitchShift(MODULE_PITCHSHIFTER_BUFFERSIZE);
-	s->shift(1.5);
+	s->shift(1.0);
 	arrStore[0] = s;
 	return 1;
 }
@@ -38,6 +38,15 @@ uint8_t PitchShifterModule::spConnOut(AudioStream **arrStore, AudioStream **used
 	*used = arrStore[0];
 	*port = 0;
 	return 1;
+}
+
+void PitchShifterModule::updateForValue(AudioStream **arrStore, uint8_t val)
+{
+	StkPitchShift *s = (StkPitchShift *)arrStore[0];
+	if(val == 0)
+	{
+		s->shift( ((BoundedValue*)values[0])->getValue() );
+	}
 }
 
 PitchShifterModule::~PitchShifterModule() {

@@ -28,6 +28,7 @@ public:
 	virtual	uint8_t		spStream(AudioStream **arrStore)=0;
 	virtual uint8_t		spConnIn(AudioStream **arrStore, AudioStream **used, int *port, int idx)=0;
 	virtual uint8_t		spConnOut(AudioStream **arrStore, AudioStream **used, int *port, int idx)=0;
+	virtual void		updateForValue(AudioStream **arrStore, uint8_t val)=0;
 	virtual				~Module();
 protected:
 	uint8_t		id;

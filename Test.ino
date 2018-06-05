@@ -14,6 +14,7 @@
 #include "state_graph_tuner.h"
 #include "state_menu_main.h"
 #include "state_menu_test.h"
+#include "state_menu_tune.h"
 #include "state_mgr.h"
 #include "state_title.h"
 #include "stk_pitch_shift.h"
@@ -39,14 +40,15 @@ static Model model(4);
 
 static InputModule modInput(1);
 //static PitchShifterModule modPitchShifter(1);
-static BitCrusherModule modEffect(2);
+static ChorusModule modEffect(2);
 static OutputModule modOutput(3);
 
-StateManager	stateManager(4, &encc1, &encc2, &encc3, &encc4, &u8g2);
-TitleState		titleState(&stateManager);
-MainMenuState	mainMenuState(&stateManager);
-TunerState		tunerState(&stateManager, &model);
-TestMenuState	testMenuState(&stateManager);
+StateManager	stateManager(5, &encc1, &encc2, &encc3, &encc4, &u8g2);
+TitleState		titleState(&stateManager);				// 0
+MainMenuState	mainMenuState(&stateManager);			// 1
+TunerState		tunerState(&stateManager, &model);		// 2
+TuneMenuState	tuneMenuState(&stateManager, &model);	// 3
+TestMenuState	testMenuState(&stateManager);			// 4
 
 /**
  * Now this function starts all audio
@@ -118,7 +120,10 @@ void setup()
 	r = stateManager.setState(2, &tunerState);
 	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load tuner!");
 
-	r = stateManager.setState(3, &testMenuState);
+	r = stateManager.setState(3, &tuneMenuState);
+	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load tune menu!");
+
+	r = stateManager.setState(4, &testMenuState);
 	if(r < 0)	gdisp_showPopupResult(&u8g2, r, "Could not load test menu!");
 
 //	//TEMP: menu

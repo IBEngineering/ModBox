@@ -16,6 +16,7 @@ public:
 	uint8_t		spStream(AudioStream **arrStore);
 	uint8_t		spConnIn(AudioStream **arrStore, AudioStream **used, int *port, int idx);
 	uint8_t		spConnOut(AudioStream **arrStore, AudioStream **used, int *port, int idx);
+	void		updateForValue(AudioStream **arrStore, uint8_t val);
 				~BitCrusherModule();
 };
 

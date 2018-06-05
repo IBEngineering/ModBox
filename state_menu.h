@@ -20,6 +20,7 @@ public:
 	void loop();
 	~MenuState();
 protected:
+	virtual void updateForValue(uint8_t i) {};
 	virtual void isetup() =0;
 	virtual void iloop() =0;
 	Menu *menu;

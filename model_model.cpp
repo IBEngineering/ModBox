@@ -49,6 +49,11 @@ int8_t Model::hasInput(Module *t, Module *m)
 	return -1;
 }
 
+void Model::updateForValue(Module *m, uint8_t i)
+{
+	m->updateForValue(&streams[m->getId()-1], i);
+}
+
 void Model::deleteAllAudio()
 {
 	for(int i = 0; i < size; i++)

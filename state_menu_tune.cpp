@@ -7,9 +7,10 @@
 
 #include "state_menu_tune.h"
 
-TuneMenuState::TuneMenuState(StateManager *mgr, Module *m) : MenuState(mgr, "Tune Menu")
+TuneMenuState::TuneMenuState(StateManager *mgr, Model *model) : MenuState(mgr, "Tune Menu")
 {
-	this->m = m;
+	this->model = model;
+	this->m = NULL;
 }
 
 void TuneMenuState::isetup()
@@ -19,11 +20,25 @@ void TuneMenuState::isetup()
 	menu->push(m->getName());
 	for(i = 0; i < m->getValueCount(); i++)
 	{
-		menu->pushAny(m->getValueNames()[i], m->getValues()[i]);
+		const char *name = m->getValueNames()[i];
+		menu->pushAny(name, m->getValues()[i]);
 	}
 }
 
 void TuneMenuState::iloop() {}
+
+void TuneMenuState::updateForValue(uint8_t i)
+{
+	disp->setCursor(5,5);
+	disp->printf("ut%d", i);
+
+	model->updateForValue(m, i);
+}
+
+void TuneMenuState::setModule(Module *m)
+{
+	this->m = m;
+}
 
 TuneMenuState::~TuneMenuState() {
 }

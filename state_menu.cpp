@@ -35,19 +35,34 @@ result_t MenuState::onScrollSec(uint8_t flag, int16_t v)
 	if(v == 0)	return EVENT_IGNORED;
 
 	uint8_t i = menu->getFocus();
+	int s = (flag==0) ? 1 : 10;
 
-	if(menu->getItemType(i) == ItemType::VALUE_BOUNDED)
+	if(menu->getItemType(i) == TEXT)
+	{
+		return EVENT_CONSUMED;	// This terminates the function without updating values
+	}
+	else if(menu->getItemType(i) == ItemType::VALUE_BOUNDED)
 	{
 		BoundedValue *val = (BoundedValue *)menu->getValue(i);
-		(v>0)? *(val) += 1 : *(val) -= 1;
+		(v>0)? *(val) += s : *(val) -= s;
 	}
 	else if(menu->getItemType(i) == ItemType::VALUE_ENUM)
 	{
 		EnumValue *val = (EnumValue *)menu->getValue(i);
-		(v>0)? *(val) += 1 : *(val) -= 1;
+		(v>0)? *(val) += s : *(val) -= s;
 	}
 
-	menu->updateItem(menu->getFocus());
+	disp->setCursor(5,5);
+	disp->printf("um%d", i);
+
+	/*
+	 * TODO: the -1 is here because the first item
+	 * in the menu is the temporary title of the
+	 * module. Make a way to modify the actual title,
+	 * remove the title item, and remove this -1
+	 */
+	updateForValue(i-1);
+	menu->updateItem(i);
 
 	return EVENT_CONSUMED;
 }

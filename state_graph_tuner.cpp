@@ -7,6 +7,8 @@
 
 #include "state_graph_tuner.h"
 
+#include "state_menu_tune.h"
+
 TunerState::TunerState(StateManager *mgr, Model *model) : GraphState(mgr, "Tuner", model)
 {
 	// Do nothing special here
@@ -16,7 +18,8 @@ result_t TunerState::onConfirm(uint8_t flag)
 {
 	if(currSelect == 0)
 	{
-		//TODO: zoom in
+		((TuneMenuState *)mgr->states[3])->setModule(model->modules[mdd.id-1]);
+		mgr->setCurrentState(3);
 	}
 	else
 	{

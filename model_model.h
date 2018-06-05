@@ -24,6 +24,8 @@ public:
 	int8_t usesInput(Module *m);
 	int8_t usesOutput(Module *m);
 	int8_t hasInput(Module *t, Module *m);
+
+	void updateForValue(Module *m, uint8_t i);
 private:
 	uint8_t			size;
 	uint8_t			count;

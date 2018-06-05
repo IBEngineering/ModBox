@@ -24,11 +24,11 @@ result_t MainMenuState::onConfirm(uint8_t flag)
 {
 	switch(menu->getFocus())
 	{
-	case 1:
+	case 1:	// Tuner
 		mgr->setCurrentState(2);
 		break;
-	case 3:
-		mgr->setCurrentState(3);
+	case 3:	// Test GUI
+		mgr->setCurrentState(4);
 		break;
 	}
 
@@ -54,7 +54,7 @@ void MainMenuState::iloop()
 
 	if(mgr->getUptime() >= 5000)
 	{
-		mgr->setCurrentState(0);	// TitleState
+//		mgr->setCurrentState(0);	// TitleState
 	}
 }
 

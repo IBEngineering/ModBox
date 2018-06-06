@@ -17,7 +17,7 @@
  */
 static const char *_vn[] = {"bits", "sample rate"};
 
-BitCrusherModule::BitCrusherModule(uint8_t id) : Module(id, "BIT", _vn, 1,1,1,1)
+BitCrusherModule::BitCrusherModule(uint8_t id) : Module(id, "BIT", _vn, 2,1,1,1)
 {
 	values = new Value*[2];
 	values[0] = new BoundedValue(4.0f, 1.0f, 1.0f, 16.0f);
